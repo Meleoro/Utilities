@@ -1,0 +1,12 @@
+{
+    "name": "utilities",
+    "displayName": "Utilities",
+    "version": "1.0.0",
+    "description": "Package which contains a lot of useful scripts for Unity Projects",
+    "unity": "2022.3",
+    "author": {
+        "name": "blablabla",
+        "email": "blablabla@gmail.com"
+    },
+    "type" : "tool"
+}
