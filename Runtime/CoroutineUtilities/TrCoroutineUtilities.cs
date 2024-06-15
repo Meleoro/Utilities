@@ -11,14 +11,14 @@ public class TrCoroutineUtilities : MonoBehaviour
     {
         if (Instance == null)
             Instance = this;
-            
+
         else
-            Destroy(gameObject);
+            Instance = this;
+
     }
-    
-    
+
     #region Shake Object Pos
-        
+
     private Dictionary<Transform, Coroutine> currentShakePositions = new();
     public void ShakePosition(Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
     {
@@ -46,9 +46,9 @@ public class TrCoroutineUtilities : MonoBehaviour
             intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
             tr.position = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
 
-            if(lockX) tr.position = new Vector3 (originalPos.x, tr.position.y, tr.position.z);
-            if(lockY) tr.position = new Vector3 (tr.position.x, originalPos.y, tr.position.z);
-            if(lockZ) tr.position = new Vector3 (tr.position.x, tr.position.y, originalPos.z);
+            if (lockX) tr.position = new Vector3(originalPos.x, tr.position.y, tr.position.z);
+            if (lockY) tr.position = new Vector3(tr.position.x, originalPos.y, tr.position.z);
+            if (lockZ) tr.position = new Vector3(tr.position.x, tr.position.y, originalPos.z);
 
             yield return null;
         }
@@ -57,7 +57,7 @@ public class TrCoroutineUtilities : MonoBehaviour
     }
 
     #endregion
-    
+
     #region Change Tr Pos
 
     private Dictionary<Transform, Coroutine> currentChangedPos = new();
@@ -83,7 +83,7 @@ public class TrCoroutineUtilities : MonoBehaviour
         {
             timer += Time.deltaTime;
 
-            if(progressCurve == null) tr.position = Vector3.Lerp(savePos, newPos, timer / duration);
+            if (progressCurve == null) tr.position = Vector3.Lerp(savePos, newPos, timer / duration);
             else tr.position = Vector3.Lerp(savePos, newPos, progressCurve.Evaluate(timer / duration));
 
             yield return null;
@@ -93,7 +93,7 @@ public class TrCoroutineUtilities : MonoBehaviour
     }
 
     #endregion
-    
+
     #region Change Tr Rot
 
     private Dictionary<Transform, Coroutine> currentChangeRot = new();
@@ -118,8 +118,8 @@ public class TrCoroutineUtilities : MonoBehaviour
         while (timer < duration)
         {
             timer += Time.deltaTime;
-                
-            if(progressCurve == null) tr.rotation = Quaternion.Lerp(saveRot, newRot, timer / duration);
+
+            if (progressCurve == null) tr.rotation = Quaternion.Lerp(saveRot, newRot, timer / duration);
             else tr.rotation = Quaternion.Lerp(saveRot, newRot, progressCurve.Evaluate(timer / duration));
 
             yield return null;
@@ -129,9 +129,9 @@ public class TrCoroutineUtilities : MonoBehaviour
     }
 
     #endregion
-    
+
     #region Change Tr Scale
-        
+
     private Dictionary<Transform, Coroutine> currentChangeScale = new();
     public void ChangeScale(Transform tr, float duration, Vector3 newScale, AnimationCurve progressCurve = null)
     {
@@ -154,8 +154,8 @@ public class TrCoroutineUtilities : MonoBehaviour
         while (timer < duration)
         {
             timer += Time.deltaTime;
-                
-            if(progressCurve == null) tr.localScale = Vector3.Lerp(saveScale, newScale, timer / duration);
+
+            if (progressCurve == null) tr.localScale = Vector3.Lerp(saveScale, newScale, timer / duration);
             else tr.localScale = Vector3.Lerp(saveScale, newScale, progressCurve.Evaluate(timer / duration));
 
             yield return null;
