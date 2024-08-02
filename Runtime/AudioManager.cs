@@ -10,14 +10,6 @@ namespace Utilities
 {
     public class AudioManager : GenericSingletonClass<AudioManager>
     {
-        [Header("Mixer")]
-        [SerializeField] private AudioMixer mixer;
-
-        [Header("Effects")]
-        [SerializeField] private Vector2 minMaxLowPass;
-        [SerializeField] private float lowPassEffectDuration = 1f;
-        [SerializeField] private AnimationCurve lowPassCurve;
-
         [Header("Sounds")]
         [SerializeField] private List<SoundCategory> soundList;
         [SerializeField] private int musicCategoryID;
