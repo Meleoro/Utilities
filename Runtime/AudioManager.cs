@@ -48,7 +48,7 @@ namespace Utilities
         }
 
         /// <summary>
-        /// WILL PLAY THE SOUND ENDLESSLY (used to play music)
+        /// WILL PLAY THE SOUND ENDLESSLY 
         /// </summary>
         public void PlaySoundContinuous(int categoryId, int soundId, int audioSourceId = 0, AudioSource audioSource = null)
         {
@@ -71,8 +71,11 @@ namespace Utilities
         {
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             currentAudioSource.pitch = Random.Range(pitchRangeMin, pitchRangeMax);
-            currentAudioSource.clip = soundList[categoryId].listSoundIdentities[soundId].audioClip;
-            currentAudioSource.pitch = 1;
+
+            currentAudioSource.PlayOneShot(soundList[categoryId].listSoundIdentities[soundId].audioClip,
+                soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume);
+            //currentAudioSource.clip = soundList[categoryId].listSoundIdentities[soundId].audioClip;
+            //currentAudioSource.pitch = 1;
         }
 
 
