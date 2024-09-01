@@ -280,7 +280,7 @@ namespace Utilities
 
             tr.localScale = newSize;
 
-            return;
+            currentChangedScale.Remove(tr);
         }
 
 
