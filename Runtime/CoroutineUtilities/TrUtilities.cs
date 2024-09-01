@@ -8,6 +8,7 @@ namespace Utilities
 {
     public static class TrUtilities
     {
+        private static List<Transform> transformToStop = new List<Transform>();
 
         #region Shake
 
@@ -251,9 +252,9 @@ namespace Utilities
         {
             if (currentChangedScale.Keys.Contains(tr))
             {
-                Debug.Log(12);
+                transformToStop.Add(tr);
 
-                currentChangedScale[tr].Dispose();
+                currentChangedScale[tr].Wait();
                 currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
             }
             else
@@ -270,12 +271,19 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr))
+                {
+                    transformToStop.Remove(tr);
+                    currentChangedScale.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
 
-                await Task.Delay((int)(Time.deltaTime * 1000));
+                await Task.Yield();
             }
 
             tr.localScale = newSize;
