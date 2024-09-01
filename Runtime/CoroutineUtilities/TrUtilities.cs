@@ -251,8 +251,6 @@ namespace Utilities
         {
             if (currentChangedScale.Keys.Contains(tr))
             {
-                Debug.Log(12);
-
                 currentChangedScale[tr].Dispose();
                 currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
             }
@@ -279,6 +277,8 @@ namespace Utilities
             }
 
             tr.localScale = newSize;
+
+            return;
         }
 
 
