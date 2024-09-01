@@ -254,7 +254,6 @@ namespace Utilities
             {
                 transformToStop.Add(tr);
 
-                currentChangedScale[tr].Wait();
                 currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
             }
             else
@@ -271,10 +270,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr))
+                if (transformToStop.Contains(tr) && timer != 0)
                 {
                     transformToStop.Remove(tr);
-                    currentChangedScale.Remove(tr);
 
                     return;
                 }
