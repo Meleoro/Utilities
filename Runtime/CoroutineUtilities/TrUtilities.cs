@@ -275,7 +275,7 @@ namespace Utilities
 
                 tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
 
-                await Task.Yield();
+                await Task.Delay((int)(Time.deltaTime * 1000));
             }
 
             tr.localScale = newSize;
