@@ -296,7 +296,8 @@ namespace Utilities
         {
             if (currentRectChangedScale.Keys.Contains(tr))
             {
-                currentRectChangedScale[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
             }
             else
@@ -313,6 +314,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
