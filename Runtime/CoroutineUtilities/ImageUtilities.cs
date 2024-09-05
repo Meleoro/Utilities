@@ -54,7 +54,7 @@ namespace Utilities
 
             image.color = new Color(image.color.r, image.color.g, image.color.b, fadeValue);
 
-            imagesToStop.Remove(image);
+            currentChangedFade.Remove(image);
         }
 
         #endregion
