@@ -44,7 +44,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
                 tr.position = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
@@ -62,6 +62,7 @@ namespace Utilities
 
             currentShakePositions.Remove(tr);
         }
+
 
 
         // Shake position with rect transform
@@ -96,7 +97,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
                 tr.position = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
@@ -116,6 +117,7 @@ namespace Utilities
         }
 
         #endregion
+
 
 
         #region Position
@@ -151,7 +153,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 tr.position = Vector3.Lerp(originalPos, newPos, timer / duration);
 
@@ -164,6 +166,7 @@ namespace Utilities
 
             currentChangedPos.Remove(tr);
         }
+
 
 
         // Change position with rect transform
@@ -197,7 +200,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 tr.position = Vector3.Lerp(originalPos, newPos, timer / duration);
 
@@ -212,6 +215,7 @@ namespace Utilities
         }
 
         #endregion
+
 
 
         #region Rotation
@@ -247,7 +251,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 tr.rotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
 
@@ -260,6 +264,7 @@ namespace Utilities
 
             currentChangedRot.Remove(tr);
         }
+
 
 
         // Change rotation with rect transform
@@ -293,7 +298,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 tr.rotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
 
@@ -308,6 +313,7 @@ namespace Utilities
         }
 
         #endregion
+
 
 
         #region Scale
@@ -343,7 +349,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
 
@@ -356,6 +362,7 @@ namespace Utilities
 
             currentChangedScale.Remove(tr);
         }
+
 
 
         // Change rotation with rect transform
@@ -389,7 +396,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += Time.unscaledDeltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
 
