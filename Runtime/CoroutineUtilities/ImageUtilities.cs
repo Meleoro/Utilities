@@ -54,6 +54,8 @@ namespace Utilities
 
             image.color = new Color(image.color.r, image.color.g, image.color.b, fadeValue);
 
+            await Task.Yield();
+
             currentChangedFade.Remove(image);
         }
 

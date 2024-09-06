@@ -18,7 +18,8 @@ namespace Utilities
         {
             if (currentShakePositions.Keys.Contains(tr))
             {
-                currentShakePositions[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentShakePositions[tr] = UShakePositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
             }
             else
@@ -36,6 +37,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
@@ -50,6 +57,10 @@ namespace Utilities
             }
 
             tr.position = originalPos;
+
+            await Task.Yield();
+
+            currentShakePositions.Remove(tr);
         }
 
 
@@ -59,7 +70,8 @@ namespace Utilities
         {
             if (currentRectShakePositions.Keys.Contains(tr))
             {
-                currentRectShakePositions[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentRectShakePositions[tr] = UShakePositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
             }
             else
@@ -77,6 +89,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
@@ -91,6 +109,10 @@ namespace Utilities
             }
 
             tr.position = originalPos;
+
+            await Task.Yield();
+
+            currentRectShakePositions.Remove(tr);
         }
 
         #endregion
@@ -104,7 +126,8 @@ namespace Utilities
         {
             if (currentChangedPos.Keys.Contains(tr))
             {
-                currentChangedPos[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos);
             }
             else
@@ -121,6 +144,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
@@ -130,6 +159,10 @@ namespace Utilities
             }
 
             tr.position = newPos;
+
+            await Task.Yield();
+
+            currentChangedPos.Remove(tr);
         }
 
 
@@ -139,7 +172,8 @@ namespace Utilities
         {
             if (currentRectChangedPos.Keys.Contains(tr))
             {
-                currentRectChangedPos[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos);
             }
             else
@@ -156,6 +190,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
@@ -165,6 +205,10 @@ namespace Utilities
             }
 
             tr.position = newPos;
+
+            await Task.Yield();
+
+            currentRectChangedPos.Remove(tr);
         }
 
         #endregion
@@ -178,7 +222,8 @@ namespace Utilities
         {
             if (currentChangedRot.Keys.Contains(tr))
             {
-                currentChangedRot[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot);
             }
             else
@@ -195,6 +240,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
@@ -204,6 +255,10 @@ namespace Utilities
             }
 
             tr.rotation = newRot;
+
+            await Task.Yield();
+
+            currentChangedRot.Remove(tr);
         }
 
 
@@ -213,7 +268,8 @@ namespace Utilities
         {
             if (currentRectChangedRot.Keys.Contains(tr))
             {
-                currentRectChangedRot[tr].Dispose();
+                transformToStop.Add(tr);
+
                 currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot);
             }
             else
@@ -230,6 +286,12 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
 
                 timer += Time.deltaTime;
 
@@ -239,6 +301,10 @@ namespace Utilities
             }
 
             tr.rotation = newRot;
+
+            await Task.Yield();
+
+            currentRectChangedRot.Remove(tr);
         }
 
         #endregion
@@ -286,6 +352,8 @@ namespace Utilities
 
             tr.localScale = newSize;
 
+            await Task.Yield();
+
             currentChangedScale.Remove(tr);
         }
 
@@ -329,6 +397,10 @@ namespace Utilities
             }
 
             tr.localScale = newSize;
+
+            await Task.Yield();
+
+            currentRectChangedScale.Remove(tr);
         }
 
         #endregion
