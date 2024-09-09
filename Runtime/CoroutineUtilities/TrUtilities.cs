@@ -411,5 +411,315 @@ namespace Utilities
         }
 
         #endregion
+
+
+
+        /// ---------------- LOCAL VERSIONS --------------------
+
+
+
+        #region Shake Local
+
+        // Shake position
+        private static Dictionary<Transform, Task> currentShakePositionsLocal = new();
+        public static void UShakeLocalPosition(this Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        {
+            if (currentShakePositionsLocal.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentShakePositionsLocal[tr] = UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
+            }
+            else
+            {
+                currentShakePositionsLocal.Add(tr, UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ));
+            }
+        }
+
+        private static async Task UShakeLocalPositionAsync(Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        {
+            float timer = 0;
+            float startIntensity = intensity;
+            Vector3 originalPos = tr.localPosition;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
+                tr.localPosition = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+
+                if (lockX) tr.localPosition = new Vector3(originalPos.x, tr.localPosition.y, tr.localPosition.z);
+                if (lockY) tr.localPosition = new Vector3(tr.localPosition.x, originalPos.y, tr.localPosition.z);
+                if (lockZ) tr.localPosition = new Vector3(tr.localPosition.x, tr.localPosition.y, originalPos.z);
+
+                await Task.Yield();
+            }
+
+            tr.localPosition = originalPos;
+
+            await Task.Yield();
+
+            currentShakePositionsLocal.Remove(tr);
+        }
+
+
+
+        // Shake position with rect transform
+        private static Dictionary<RectTransform, Task> currentRectShakePositionsLocal = new();
+        public static void UShakeLocalPosition(this RectTransform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        {
+            if (currentRectShakePositionsLocal.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentRectShakePositionsLocal[tr] = UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
+            }
+            else
+            {
+                currentRectShakePositionsLocal.Add(tr, UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ));
+            }
+        }
+
+        private static async Task UShakeLocalPositionAsync(RectTransform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        {
+            float timer = 0;
+            float startIntensity = intensity;
+            Vector3 originalPos = tr.localPosition;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
+                tr.localPosition = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+
+                if (lockX) tr.localPosition = new Vector3(originalPos.x, tr.localPosition.y, tr.localPosition.z);
+                if (lockY) tr.localPosition = new Vector3(tr.localPosition.x, originalPos.y, tr.localPosition.z);
+                if (lockZ) tr.localPosition = new Vector3(tr.localPosition.x, tr.localPosition.y, originalPos.z);
+
+                await Task.Yield();
+            }
+
+            tr.localPosition = originalPos;
+
+            await Task.Yield();
+
+            currentRectShakePositionsLocal.Remove(tr);
+        }
+
+        #endregion
+
+
+
+        #region Position Local
+
+        // Change position
+        private static Dictionary<Transform, Task> currentChangedPosLocal = new();
+        public static void UChangeLocalPosition(this Transform tr, float duration, Vector3 newPos)
+        {
+            if (currentChangedPosLocal.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos);
+            }
+            else
+            {
+                currentChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos));
+            }
+        }
+
+        private static async Task UChangeLocalPositionAsync(Transform tr, float duration, Vector3 newPos)
+        {
+            float timer = 0;
+            Vector3 originalPos = tr.localPosition;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localPosition = Vector3.Lerp(originalPos, newPos, timer / duration);
+
+                await Task.Yield();
+            }
+
+            tr.localPosition = newPos;
+
+            await Task.Yield();
+
+            currentChangedPosLocal.Remove(tr);
+        }
+
+
+
+        // Change position with rect transform
+        private static Dictionary<RectTransform, Task> currentRectChangedPosLocal = new();
+        public static void UChangeLocalPosition(this RectTransform tr, float duration, Vector3 newPos)
+        {
+            if (currentRectChangedPosLocal.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentRectChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos);
+            }
+            else
+            {
+                currentRectChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos));
+            }
+        }
+
+        private static async Task UChangeLocalPositionAsync(RectTransform tr, float duration, Vector3 newPos)
+        {
+            float timer = 0;
+            Vector3 originalPos = tr.localPosition;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localPosition = Vector3.Lerp(originalPos, newPos, timer / duration);
+
+                await Task.Yield();
+            }
+
+            tr.localPosition = newPos;
+
+            await Task.Yield();
+
+            currentRectChangedPosLocal.Remove(tr);
+        }
+
+        #endregion
+
+
+
+        #region Rotation Local
+
+        // Change rotation
+        private static Dictionary<Transform, Task> currentChangedRotLocal = new();
+        public static void UChangeLocalRotation(this Transform tr, float duration, Quaternion newRot)
+        {
+            if (currentChangedRotLocal.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot);
+            }
+            else
+            {
+                currentChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot));
+            }
+        }
+
+        private static async Task UChangeLocalRotationAsync(Transform tr, float duration, Quaternion newRot)
+        {
+            float timer = 0;
+            Quaternion originalRot = tr.localRotation;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localRotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
+
+                await Task.Yield();
+            }
+
+            tr.localRotation = newRot;
+
+            await Task.Yield();
+
+            currentChangedRotLocal.Remove(tr);
+        }
+
+
+
+        // Change rotation with rect transform
+        private static Dictionary<RectTransform, Task> currentRectChangedRotLocal = new();
+        public static void UChangeLocalRotation(this RectTransform tr, float duration, Quaternion newRot)
+        {
+            if (currentRectChangedRotLocal.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentRectChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot);
+            }
+            else
+            {
+                currentRectChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot));
+            }
+        }
+
+        private static async Task UChangeLocalRotationAsync(RectTransform tr, float duration, Quaternion newRot)
+        {
+            float timer = 0;
+            Quaternion originalRot = tr.localRotation;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localRotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
+
+                await Task.Yield();
+            }
+
+            tr.localRotation = newRot;
+
+            await Task.Yield();
+
+            currentRectChangedRotLocal.Remove(tr);
+        }
+
+        #endregion
     }
 }
