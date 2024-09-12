@@ -17,15 +17,11 @@ namespace Utilities
             float timer = 0;
             float originalValue = variable;
 
-            Debug.Log(originalValue);
-
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
 
                 timer += Time.deltaTime;
-
-                Debug.Log(currentVariable);
 
                 currentVariable(Mathf.Lerp(originalValue, endValue, timer / duration));
 
