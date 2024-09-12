@@ -12,9 +12,9 @@ namespace Utilities
     {
         #region Lerp Float
 
-        public static void ULerpFloat(this Action<float> currentVariable, float duration, float endValue)
+        public static void ULerpFloat(this float currentVariable, float duration, float endValue)
         {
-            ULerpFloatAction(currentVariable, duration, duration);
+            ULerpFloatAction((result => currentVariable = result), duration, duration);
         }
         
 
