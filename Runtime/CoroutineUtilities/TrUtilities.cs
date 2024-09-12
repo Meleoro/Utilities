@@ -119,7 +119,6 @@ namespace Utilities
         #endregion
 
 
-
         #region Position
 
         // Change position
@@ -215,7 +214,6 @@ namespace Utilities
         }
 
         #endregion
-
 
 
         #region Rotation
@@ -315,7 +313,6 @@ namespace Utilities
         #endregion
 
 
-
         #region Scale
 
         // Change rotation
@@ -413,9 +410,146 @@ namespace Utilities
         #endregion
 
 
+        #region Bounce Scale
+
+        // Bounce
+        private static Dictionary<Transform, Task> currentBouncedScale = new();
+        public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        {
+            if (currentBouncedScale.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentBouncedScale[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize);
+            }
+            else
+            {
+                currentBouncedScale.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize));
+            }
+        }
+
+        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        {
+            float timer = 0;
+            Vector3 originalScale = tr.localScale;
+
+            while (timer < duration1)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localScale = Vector3.Lerp(originalScale, bounceSize, timer / duration1);
+
+                await Task.Yield();
+            }
+
+            tr.localScale = bounceSize;
+
+            timer = 0;
+
+            while (timer < duration2)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localScale = Vector3.Lerp(bounceSize, endSize, timer / duration2);
+
+                await Task.Yield();
+            }
+
+            tr.localScale = endSize;
+
+            await Task.Yield();
+
+            currentChangedScale.Remove(tr);
+        }
+
+
+
+        // Change rotation with rect transform
+        private static Dictionary<Transform, Task> currentBouncedRectTr = new();
+        public static void UBounce(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        {
+            if (currentBouncedRectTr.Keys.Contains(tr))
+            {
+                transformToStop.Add(tr);
+
+                currentBouncedRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize);
+            }
+            else
+            {
+                currentBouncedRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize));
+            }
+        }
+
+        private static async Task UBounceAsync(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        {
+            float timer = 0;
+            Vector3 originalScale = tr.localScale;
+
+            while (timer < duration1)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localScale = Vector3.Lerp(originalScale, bounceSize, timer / duration1);
+
+                await Task.Yield();
+            }
+
+            tr.localScale = bounceSize;
+
+            timer = 0;
+
+            while (timer < duration2)
+            {
+                if (!Application.isPlaying) return;
+                if (transformToStop.Contains(tr) && timer != 0)
+                {
+                    transformToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                tr.localScale = Vector3.Lerp(bounceSize, endSize, timer / duration2);
+
+                await Task.Yield();
+            }
+
+            tr.localScale = endSize;
+
+            await Task.Yield();
+
+            currentBouncedRectTr.Remove(tr);
+        }
+
+        #endregion
+
 
         /// ---------------- LOCAL VERSIONS --------------------
-
 
 
         #region Shake Local
@@ -527,7 +661,6 @@ namespace Utilities
         #endregion
 
 
-
         #region Position Local
 
         // Change position
@@ -623,7 +756,6 @@ namespace Utilities
         }
 
         #endregion
-
 
 
         #region Rotation Local
