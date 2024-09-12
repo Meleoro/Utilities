@@ -15,7 +15,7 @@ namespace Utilities
         public static async Task ULerpFloatAction(this float variable, Action<float> currentVariable, float duration, float endValue)
         {
             float timer = 0;
-            float originalValue = 0;
+            float originalValue = variable;
 
             while (timer < duration)
             {
