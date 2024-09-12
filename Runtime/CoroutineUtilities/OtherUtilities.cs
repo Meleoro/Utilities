@@ -12,14 +12,7 @@ namespace Utilities
     {
         #region Lerp Float
 
-
-        public static void ULerpFloat(this float variable, Action<float> currentVariable, float duration, float endValue)
-        {
-            ULerpFloatAction(currentVariable, duration, duration);
-        }
-        
-
-        private static async Task ULerpFloatAction(Action<float> currentVariable, float duration, float endValue)
+        public static async Task ULerpFloatAction(this float variable, Action<float> currentVariable, float duration, float endValue)
         {
             float timer = 0;
             float originalValue = 0;
