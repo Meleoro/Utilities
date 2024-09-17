@@ -44,6 +44,8 @@ namespace Utilities
             currentAudioSource.PlayOneShot(soundList[categoryId].listSoundIdentities[soundId].audioClip,
                 soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume);
 
+            currentAudioSource.loop = false;
+
             currentAudioSource.volume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume;
         }
 
@@ -61,16 +63,20 @@ namespace Utilities
             else
                 currentAudioSource.volume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume;
 
+            currentAudioSource.loop = true;
+
             currentAudioSource.Play();
         }
 
         /// <summary>
         /// WILL PLAY THE SOUND ONE TIME AND WITH A RANDOM PITCH VARIATION
         /// </summary>
-        public void PlaySoundOneShotRandomPitch(float pitchRangeMin, float pitchRangeMax, int soundId, int categoryId = 0, int audioSourceId = 0, AudioSource audioSource = null)
+        public void PlaySoundOneShotRandomPitch(float pitchRangeMin, float pitchRangeMax, int categoryId, int soundId, int audioSourceId = 0, AudioSource audioSource = null)
         {
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             currentAudioSource.pitch = Random.Range(pitchRangeMin, pitchRangeMax);
+
+            currentAudioSource.loop = false;
 
             currentAudioSource.PlayOneShot(soundList[categoryId].listSoundIdentities[soundId].audioClip,
                 soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume);
@@ -79,21 +85,45 @@ namespace Utilities
         }
 
 
-        public void PlaySoundFadingIn(float timeToFade, int categoryId, int soundId, int audioSourceId = 0, AudioSource audioSource = null)
+        public void PlaySoundOneShotFadingIn(float timeToFade, int categoryId, int soundId, int audioSourceId = 0, AudioSource audioSource = null)
         {
             PlaySoundContinuous(categoryId, soundId, audioSourceId, audioSource);
 
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             float wantedVolume = currentAudioSource.volume;
             currentAudioSource.volume = 0;
+
+            currentAudioSource.loop = false;
+
             StartCoroutine(FadeValue(0, wantedVolume, timeToFade, currentAudioSource));
         }
+
+        public void PlaySoundContinuousFadingIn(float timeToFade, int categoryId, int soundId, int audioSourceId = 0, AudioSource audioSource = null)
+        {
+            PlaySoundContinuous(categoryId, soundId, audioSourceId, audioSource);
+
+            AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
+            float wantedVolume = currentAudioSource.volume;
+            currentAudioSource.volume = 0;
+
+            currentAudioSource.loop = true;
+
+            StartCoroutine(FadeValue(0, wantedVolume, timeToFade, currentAudioSource));
+        }
+
 
         public void FadeOutAudioSource(float timeToFade, int audioSourceId, AudioSource audioSource = null)
         {
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             StartCoroutine(FadeValue(currentAudioSource.volume, 0, timeToFade, currentAudioSource));
         }
+
+        public void FadeInAudioSource(float timeToFade, int wantedVolume, int audioSourceId, AudioSource audioSource = null)
+        {
+            AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
+            StartCoroutine(FadeValue(0, wantedVolume, timeToFade, currentAudioSource));
+        }
+
 
         private IEnumerator FadeValue(float start, float wantedValue, float timeToFade, AudioSource audioSource)
         {
