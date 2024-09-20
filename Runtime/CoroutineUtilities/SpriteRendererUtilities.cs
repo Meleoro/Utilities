@@ -13,7 +13,7 @@ namespace Utilities
         #region Fade Sprite Renderer
 
         private static Dictionary<SpriteRenderer, Task> currentFadedSpritesRenderers = new();
-        public static void UFadeSpriteRenderer(SpriteRenderer currentSpriteRenderer, float duration, float newFadeValue)
+        public static void UFadeSpriteRenderer(this SpriteRenderer currentSpriteRenderer, float duration, float newFadeValue)
         {
             if (currentFadedSpritesRenderers.Keys.Contains(currentSpriteRenderer))
             {
@@ -27,7 +27,7 @@ namespace Utilities
             }
         }
 
-        private static async Task UFadeSpriteRendererCoroutine(SpriteRenderer currentSpriteRenderer, float duration, float newFadeValue)
+        private static async Task UFadeSpriteRendererCoroutine(this SpriteRenderer currentSpriteRenderer, float duration, float newFadeValue)
         {
             float timer = 0;
             Color originalColor = currentSpriteRenderer.color;
@@ -55,6 +55,54 @@ namespace Utilities
             await Task.Yield();
 
             currentFadedSpritesRenderers.Remove(currentSpriteRenderer); 
+        }
+
+        #endregion
+
+        #region Lerp Color Renderer
+
+        private static Dictionary<SpriteRenderer, Task> currentLerpedColorSpritesRenderers = new();
+        public static void ULerpColorSpriteRenderer(this SpriteRenderer currentSpriteRenderer, float duration, Color newColor)
+        {
+            if (currentLerpedColorSpritesRenderers.Keys.Contains(currentSpriteRenderer))
+            {
+                spriteRenderersToStop.Add(currentSpriteRenderer);
+
+                currentLerpedColorSpritesRenderers[currentSpriteRenderer] = ULerpColorSpriteRendererAsync(currentSpriteRenderer, duration, newColor);
+            }
+            else
+            {
+                currentLerpedColorSpritesRenderers.Add(currentSpriteRenderer, ULerpColorSpriteRendererAsync(currentSpriteRenderer, duration, newColor));
+            }
+        }
+
+        private static async Task ULerpColorSpriteRendererAsync(this SpriteRenderer currentSpriteRenderer, float duration, Color newColor)
+        {
+            float timer = 0;
+            Color originalColor = currentSpriteRenderer.color;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (spriteRenderersToStop.Contains(currentSpriteRenderer) && timer != 0)
+                {
+                    spriteRenderersToStop.Remove(currentSpriteRenderer);
+
+                    return;
+                }
+
+                timer += Time.deltaTime;
+
+                currentSpriteRenderer.color = Color.Lerp(originalColor, newColor, timer / duration);
+
+                await Task.Yield();
+            }
+
+            currentSpriteRenderer.color = newColor;
+
+            await Task.Yield();
+
+            currentFadedSpritesRenderers.Remove(currentSpriteRenderer);
         }
 
         #endregion
