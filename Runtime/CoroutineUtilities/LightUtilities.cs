@@ -58,6 +58,10 @@ namespace Utilities
             }
 
             light.intensity = newIntensity;
+
+            await Task.Yield();
+
+            currentLerpedLights.Remove(light);
         }
 
         #endregion
@@ -106,6 +110,10 @@ namespace Utilities
             }
 
             light.intensity = newIntensity;
+
+            await Task.Yield();
+
+            currentLerpedLights2D.Remove(light);
         }
 
         #endregion
