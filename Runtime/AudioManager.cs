@@ -15,7 +15,7 @@ namespace Utilities
         [SerializeField] private int musicCategoryID;
 
         [Header("Audio Sources")]
-        [SerializeField] private List<AudioSource> audioSources;
+        public List<AudioSource> audioSources;
 
         [Header("Volume")]
         [Range(0f, 1f)][SerializeField] private float masterVolume;
