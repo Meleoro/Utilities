@@ -12,7 +12,7 @@ public static class LightUtilities
     #region Lerp Light
 
     private static Dictionary<Light, Task> currentLerpedLights = new();
-    public static void LerpIntensity(this Light light, float duration, float newIntensity, AnimationCurve curve = null)
+    public static void ULerpIntensity(this Light light, float duration, float newIntensity, AnimationCurve curve = null)
     {
         if (currentLerpedLights.Keys.Contains(light))
         {
@@ -56,7 +56,7 @@ public static class LightUtilities
     #region Lerp Light 2D
 
     private static Dictionary<Light2D, Task> currentLerpedLights2D = new();
-    public static void LerpIntensity(this Light2D light, float duration, float newIntensity, AnimationCurve curve = null)
+    public static void ULerpIntensity(this Light2D light, float duration, float newIntensity, AnimationCurve curve = null)
     {
         if (currentLerpedLights2D.Keys.Contains(light))
         {
