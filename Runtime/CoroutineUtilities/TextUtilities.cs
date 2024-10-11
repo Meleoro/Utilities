@@ -65,21 +65,21 @@ namespace Utilities
         #region Glitch Text
 
         private static Dictionary<TextMeshProUGUI, Task> currentGlitchedText = new();
-        public static void UGlitchTextLerp(this TextMeshProUGUI text, float duration, float glitchStrength, float startValue = 0)
+        public static void UGlitchTextLerp(this TextMeshProUGUI text, float duration, float endValue, float startValue = 0)
         {
             if (currentGlitchedText.Keys.Contains(text))
             {
                 textsToStop.Add(text);
 
-                currentGlitchedText[text] = UGlitchTextLerpAsync(text, duration, glitchStrength);
+                currentGlitchedText[text] = UGlitchTextLerpAsync(text, duration, endValue, startValue);
             }
             else
             {
-                currentGlitchedText.Add(text, UGlitchTextLerpAsync(text, duration, glitchStrength));
+                currentGlitchedText.Add(text, UGlitchTextLerpAsync(text, duration, endValue, startValue));
             }
         }
 
-        private static async Task UGlitchTextLerpAsync(TextMeshProUGUI text, float duration, float glitchStrength, float startValue = 0)
+        private static async Task UGlitchTextLerpAsync(TextMeshProUGUI text, float duration, float endValue, float startValue = 0)
         {
             float timer = 0;
 
@@ -96,12 +96,12 @@ namespace Utilities
 
                 timer += Time.deltaTime;
 
-                GlitchText(Mathf.Lerp(startValue, glitchStrength, timer / duration), text);
+                GlitchText(Mathf.Lerp(startValue, endValue, timer / duration), text);
 
                 await Task.Yield();
             }
 
-            GlitchText(glitchStrength, text);
+            GlitchText(endValue, text);
 
             await Task.Yield();
 
