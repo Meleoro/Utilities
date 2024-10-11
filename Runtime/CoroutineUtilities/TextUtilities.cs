@@ -79,7 +79,7 @@ namespace Utilities
             }
         }
 
-        private static async Task UGlitchTextLerpAsync(TextMeshProUGUI text, float duration, float endValue, float startValue = 0)
+        private static async Task UGlitchTextLerpAsync(TextMeshProUGUI text, float duration, float endValue, float startValue)
         {
             float timer = 0;
 
@@ -124,8 +124,8 @@ namespace Utilities
                 for (int j = 0; j < 4; j++)
                 {
                     Vector3 originalPos = verticies[charInfo.vertexIndex + j];
-                    verticies[charInfo.vertexIndex + j] = originalPos + new Vector3(Mathf.PerlinNoise(Time.time * Random.Range(0, 10), Time.time * Random.Range(0, 10)) * intensity,
-                        Mathf.PerlinNoise(Time.time * Random.Range(0, 10), Time.time * Random.Range(0, 10)) * intensity * 0.1f, 0);
+                    verticies[charInfo.vertexIndex + j] = originalPos + new Vector3(Mathf.PerlinNoise(Time.time * Random.Range(-10, 10), Time.time * Random.Range(-10, 10)) * intensity,
+                        Mathf.PerlinNoise(Time.time * Random.Range(-10, 10), Time.time * Random.Range(-10, 10)) * intensity * 0.1f, 0);
 
                 }
                 textInfo.meshInfo[charInfo.materialReferenceIndex].vertices = verticies;
