@@ -11,7 +11,7 @@ namespace Utilities
     public class AudioManager : GenericSingletonClass<AudioManager>
     {
         [Header("Sounds")]
-        [SerializeField] private List<SoundCategory> soundList;
+        public List<SoundCategory> soundList;
         [SerializeField] private int musicCategoryID;
 
         [Header("Audio Sources")]
@@ -76,8 +76,6 @@ namespace Utilities
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             currentAudioSource.pitch = Random.Range(pitchRangeMin, pitchRangeMax);
 
-            currentAudioSource.loop = false;
-
             currentAudioSource.PlayOneShot(soundList[categoryId].listSoundIdentities[soundId].audioClip,
                 soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume);
             //currentAudioSource.clip = soundList[categoryId].listSoundIdentities[soundId].audioClip;
@@ -87,13 +85,11 @@ namespace Utilities
 
         public void PlaySoundOneShotFadingIn(float timeToFade, int categoryId, int soundId, int audioSourceId = 0, AudioSource audioSource = null)
         {
-            PlaySoundContinuous(categoryId, soundId, audioSourceId, audioSource);
+            PlaySoundOneShot(categoryId, soundId, audioSourceId, audioSource);
 
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             float wantedVolume = currentAudioSource.volume;
             currentAudioSource.volume = 0;
-
-            currentAudioSource.loop = false;
 
             StartCoroutine(FadeValue(0, wantedVolume, timeToFade, currentAudioSource));
         }
