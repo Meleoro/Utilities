@@ -57,15 +57,15 @@ namespace Utilities
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
             currentAudioSource.clip = soundList[categoryId].listSoundIdentities[soundId].audioClip;
 
+            currentAudioSource.loop = true;
+
+            currentAudioSource.Play();
+
             if (musicCategoryID == categoryId)
                 currentAudioSource.volume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * musicVolume;
 
             else
                 currentAudioSource.volume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume;
-
-            currentAudioSource.loop = true;
-
-            currentAudioSource.Play();
         }
 
         /// <summary>
@@ -99,7 +99,13 @@ namespace Utilities
             PlaySoundContinuous(categoryId, soundId, audioSourceId, audioSource);
 
             AudioSource currentAudioSource = audioSource is not null ? audioSource : audioSources[audioSourceId];
-            float wantedVolume = currentAudioSource.volume;
+            float wantedVolume = 0;
+            if (musicCategoryID == categoryId)
+                wantedVolume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * musicVolume;
+
+            else
+                wantedVolume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume;
+
             currentAudioSource.volume = 0;
 
             currentAudioSource.loop = true;
