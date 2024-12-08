@@ -133,6 +133,8 @@ namespace Utilities
 
                 yield return null;
             }
+
+            audioSource.volume = wantedValue;
         }
 
         #endregion
