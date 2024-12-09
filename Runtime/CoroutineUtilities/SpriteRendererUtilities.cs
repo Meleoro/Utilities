@@ -102,7 +102,7 @@ namespace Utilities
 
             await Task.Yield();
 
-            currentFadedSpritesRenderers.Remove(currentSpriteRenderer);
+            currentLerpedColorSpritesRenderers.Remove(currentSpriteRenderer);
         }
 
         #endregion
