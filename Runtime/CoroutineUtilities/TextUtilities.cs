@@ -124,7 +124,7 @@ namespace Utilities
                 for (int j = 0; j < 4; j++)
                 {
                     Vector3 originalPos = verticies[charInfo.vertexIndex + j];
-                    verticies[charInfo.vertexIndex + j] = originalPos + new Vector3(Mathf.PerlinNoise(Time.time * Random.Range(-10, 10), Time.time * Random.Range(-10, 10)) * intensity,
+                    verticies[charInfo.vertexIndex + j] = originalPos + new Vector3(Mathf.PerlinNoise(Time.time * Random.Range(-10, 10), Time.time * Random.Range(-10, 10)) * intensity - intensity * 0.5f,
                         Mathf.PerlinNoise(Time.time * Random.Range(-10, 10), Time.time * Random.Range(-10, 10)) * intensity * 0.1f, 0);
 
                 }
