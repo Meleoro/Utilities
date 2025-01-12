@@ -9,6 +9,10 @@ namespace Utilities
     public static class TrUtilities
     {
         private static List<Transform> transformToStop = new List<Transform>();
+        private static List<Transform> positionsToStop = new List<Transform>();
+        private static List<Transform> scalesToStop = new List<Transform>();
+        private static List<Transform> rotationsToStop = new List<Transform>();
+
 
         #region Shake
 
@@ -127,7 +131,8 @@ namespace Utilities
         {
             if (currentChangedPos.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                if(!positionsToStop.Contains(tr))
+                    positionsToStop.Add(tr);
 
                 currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos);
             }
@@ -145,9 +150,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (positionsToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    positionsToStop.Remove(tr);
 
                     return;
                 }
@@ -174,7 +179,8 @@ namespace Utilities
         {
             if (currentRectChangedPos.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                if (!positionsToStop.Contains(tr))
+                    positionsToStop.Add(tr);
 
                 currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos);
             }
@@ -192,9 +198,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (positionsToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    positionsToStop.Remove(tr);
 
                     return;
                 }
@@ -224,7 +230,8 @@ namespace Utilities
         {
             if (currentChangedRot.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                if (!rotationsToStop.Contains(tr))
+                    rotationsToStop.Add(tr);
 
                 currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot);
             }
@@ -242,9 +249,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rotationsToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rotationsToStop.Remove(tr);
 
                     return;
                 }
@@ -271,7 +278,8 @@ namespace Utilities
         {
             if (currentRectChangedRot.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                if (!transformToStop.Contains(tr))
+                    transformToStop.Add(tr);
 
                 currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot);
             }
@@ -321,7 +329,8 @@ namespace Utilities
         {
             if (currentChangedScale.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                if(!scalesToStop.Contains(tr))
+                    scalesToStop.Add(tr);
 
                 currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
             }
@@ -339,9 +348,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (scalesToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    scalesToStop.Remove(tr);
 
                     return;
                 }
@@ -368,7 +377,8 @@ namespace Utilities
         {
             if (currentRectChangedScale.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                if (!scalesToStop.Contains(tr))
+                    scalesToStop.Add(tr);
 
                 currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
             }
@@ -386,9 +396,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (scalesToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    scalesToStop.Remove(tr);
 
                     return;
                 }
