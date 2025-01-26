@@ -49,7 +49,7 @@ namespace Utilities
 
                 timer += Time.deltaTime;
 
-                volume.weight = Mathf.Lerp(originalWeight, endValue, timer / endValue);
+                volume.weight = Mathf.Lerp(originalWeight, endValue, timer / duration);
 
                 await Task.Yield();
             }
@@ -59,6 +59,56 @@ namespace Utilities
             await Task.Yield();
 
             currentLerpedVolumeWeight.Remove(volume);
+        }
+
+        #endregion
+
+
+        #region Lerp Volume Unscaled
+
+        // Lerp Volume Weight
+        private static Dictionary<Volume, Task> currentUnscaledLerpedVolumeWeight = new();
+        public static void ULerpWeightUnscaled(this Volume volume, float duration, float endValue)
+        {
+            if (currentUnscaledLerpedVolumeWeight.Keys.Contains(volume))
+            {
+                volumesToStop.Add(volume);
+
+                currentUnscaledLerpedVolumeWeight[volume] = ULerpWeightUnscaledAsync(volume, duration, endValue);
+            }
+            else
+            {
+                currentUnscaledLerpedVolumeWeight.Add(volume, ULerpWeightUnscaledAsync(volume, duration, endValue));
+            }
+        }
+
+        private static async Task ULerpWeightUnscaledAsync(Volume volume, float duration, float endValue)
+        {
+            float timer = 0;
+            float originalWeight = volume.weight;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (volumesToStop.Contains(volume) && timer != 0)
+                {
+                    volumesToStop.Remove(volume);
+
+                    return;
+                }
+
+                timer += Time.unscaledDeltaTime;
+
+                volume.weight = Mathf.Lerp(originalWeight, endValue, timer / duration);
+
+                await Task.Yield();
+            }
+
+            volume.weight = endValue;
+
+            await Task.Yield();
+
+            currentUnscaledLerpedVolumeWeight.Remove(volume);
         }
 
         #endregion
