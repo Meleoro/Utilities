@@ -12,10 +12,15 @@ namespace Utilities
     {
         [Header("Sounds")]
         public List<SoundCategory> soundList;
-        [SerializeField] private int musicCategoryID;
+        public int musicCategoryID;
 
         [Header("Audio Sources")]
         public List<AudioSource> audioSources;
+
+        [Header("Private Infos")]
+        private List<AudioSource> musicAudioSources = new();
+        private List<float> musicAudioSourcesOriginalVolumes = new();
+
 
         [Header("Volume")]
         [Range(0f, 1f)][SerializeField] private float masterVolume;
@@ -44,6 +49,15 @@ namespace Utilities
             currentAudioSource.PlayOneShot(soundList[categoryId].listSoundIdentities[soundId].audioClip,
                 soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume);
 
+            for(int i = 0; i < musicAudioSources.Count; i++)
+            {
+                if (musicAudioSources[i] == currentAudioSource)
+                {
+                    musicAudioSources.RemoveAt(i);
+                    musicAudioSourcesOriginalVolumes.RemoveAt(i);
+                }
+            }
+
             currentAudioSource.loop = false;
 
             currentAudioSource.volume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * sfxVolume;
@@ -60,6 +74,12 @@ namespace Utilities
             currentAudioSource.loop = true;
 
             currentAudioSource.Play();
+
+            if (!musicAudioSources.Contains(currentAudioSource) && musicCategoryID == categoryId)
+            {
+                musicAudioSources.Add(currentAudioSource);
+                musicAudioSourcesOriginalVolumes.Add(soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * musicVolume);
+            }
 
             if (musicCategoryID == categoryId)
                 currentAudioSource.volume = soundList[categoryId].listSoundIdentities[soundId].volume * masterVolume * musicVolume;
@@ -151,6 +171,11 @@ namespace Utilities
         public void SetMasterVolume(float newMasterVolume)
         {
             masterVolume = newMasterVolume;
+
+            for(int i = 0; i < musicAudioSources.Count; i++)
+            {
+                musicAudioSources[i].volume = musicAudioSourcesOriginalVolumes[i] * masterVolume * musicVolume;
+            }
         }
 
         public void SetSfxVolume(float newSfxVolume)
@@ -161,6 +186,11 @@ namespace Utilities
         public void SetMusicVolume(float newMusicVolume)
         {
             musicVolume = newMusicVolume;
+
+            for (int i = 0; i < musicAudioSources.Count; i++)
+            {
+                musicAudioSources[i].volume = musicAudioSourcesOriginalVolumes[i] * masterVolume * musicVolume;
+            }
         }
 
         #endregion
