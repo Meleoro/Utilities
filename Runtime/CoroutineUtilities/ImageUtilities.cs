@@ -18,6 +18,7 @@ namespace Utilities
             if (currentChangedFade.Keys.Contains(image))
             {
                 fadesToStop.Add(image);
+                currentChangedFade.Remove(image);
             }
         }
 
@@ -80,6 +81,7 @@ namespace Utilities
             if (currentLerpedColor.Keys.Contains(image))
             {
                 lerpedColorsToStop.Add(image);
+                currentLerpedColor.Remove(image);
             }
         }
 
@@ -142,6 +144,7 @@ namespace Utilities
             if (currentBouncedColors.Keys.Contains(image))
             {
                 bouncedColorsToStop.Add(image);
+                currentBouncedColors.Remove(image);
             }
         }
 
