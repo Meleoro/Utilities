@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +23,7 @@ namespace Utilities
 
         private static List<Image> fadesToStop = new List<Image>();
         private static Dictionary<Image, Task> currentChangedFade = new();
-        public static void UFadeImage(this Image image, float duration, float fadeValue, bool unscaledTime = false)
+        public static void UFadeImage(this Image image, float duration, float fadeValue, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if(duration == 0)
             {
@@ -34,15 +35,15 @@ namespace Utilities
             {
                 fadesToStop.Add(image);
 
-                currentChangedFade[image] = UFadeImageAsync(image, duration, fadeValue, unscaledTime);
+                currentChangedFade[image] = UFadeImageAsync(image, duration, fadeValue, curve, unscaledTime);
             }
             else
             {
-                currentChangedFade.Add(image, UFadeImageAsync(image, duration, fadeValue, unscaledTime));
+                currentChangedFade.Add(image, UFadeImageAsync(image, duration, fadeValue, curve, unscaledTime));
             }
         }
 
-        private static async Task UFadeImageAsync(Image image, float duration, float fadeValue, bool unscaledTime)
+        private static async Task UFadeImageAsync(Image image, float duration, float fadeValue, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             float originalFade = image.color.a;
@@ -59,7 +60,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                image.color = new Color(image.color.r, image.color.g, image.color.b, Mathf.Lerp(originalFade, fadeValue, timer / duration));
+                image.color = new Color(image.color.r, image.color.g, image.color.b, Mathf.Lerp(originalFade, fadeValue, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration)));
 
                 await Task.Yield();
             }
@@ -74,7 +75,7 @@ namespace Utilities
 
         #region Lerp Image Color
 
-        public static void UStopColorImageColorLerp(this Image image)
+        public static void UStopLerpImageColor(this Image image)
         {
             if (currentLerpedColor.Keys.Contains(image))
             {
@@ -84,7 +85,7 @@ namespace Utilities
 
         private static List<Image> lerpedColorsToStop = new List<Image>();
         private static Dictionary<Image, Task> currentLerpedColor = new();
-        public static void ULerpImageColor(this Image image, float duration, Color endColor, bool unscaledTime = false)
+        public static void ULerpImageColor(this Image image, float duration, Color endColor, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (duration == 0)
             {
@@ -96,15 +97,15 @@ namespace Utilities
             {
                 lerpedColorsToStop.Add(image);
 
-                currentLerpedColor[image] = ULerpImageColorAsync(image, duration, endColor, unscaledTime);
+                currentLerpedColor[image] = ULerpImageColorAsync(image, duration, endColor, curve, unscaledTime);
             }
             else
             {
-                currentLerpedColor.Add(image, ULerpImageColorAsync(image, duration, endColor, unscaledTime));
+                currentLerpedColor.Add(image, ULerpImageColorAsync(image, duration, endColor, curve, unscaledTime));
             }
         }
 
-        private static async Task ULerpImageColorAsync(Image image, float duration, Color endColor, bool unscaledTime)
+        private static async Task ULerpImageColorAsync(Image image, float duration, Color endColor, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Color originalColor = image.color;
@@ -121,7 +122,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                image.color = Color.Lerp(originalColor, endColor, timer / duration);
+                image.color = Color.Lerp(originalColor, endColor, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -136,33 +137,34 @@ namespace Utilities
 
         #region Bounce Image Color
 
-        public static void UStopColorImageColorBounce(this Image image)
+        public static void UStopBounceImageColor(this Image image)
         {
             if (currentBouncedColors.Keys.Contains(image))
             {
                 bouncedColorsToStop.Add(image);
             }
         }
+
 
         private static List<Image> bouncedColorsToStop = new List<Image>();
         private static Dictionary<Image, Task> currentBouncedColors = new();
-        public static void UBounceImageColor(this Image image, float duration1, Color endColor1, float duration2, Color endColor2, bool loopBounce = false, bool unscaledTime = false)
+        public static void UBounceImageColor(this Image image, float duration1, Color endColor1, float duration2, Color endColor2, CurveType curve = CurveType.None, bool loop = false, bool unscaledTime = false)
         {
             if (currentBouncedColors.Keys.Contains(image))
             {
                 bouncedColorsToStop.Add(image);
 
-                currentBouncedColors[image] = UBounceImageColorAsync(image, duration1, endColor1, duration2, endColor2, loopBounce, unscaledTime);
+                currentBouncedColors[image] = UBounceImageColorAsync(image, duration1, endColor1, duration2, endColor2, curve, loop, unscaledTime);
             }
             else
             {
-                currentBouncedColors.Add(image, UBounceImageColorAsync(image, duration1, endColor1, duration2, endColor2, loopBounce, unscaledTime));
+                currentBouncedColors.Add(image, UBounceImageColorAsync(image, duration1, endColor1, duration2, endColor2, curve, loop, unscaledTime));
             }
         }
 
-        private static async Task UBounceImageColorAsync(Image image, float duration1, Color endColor1, float duration2, Color endColor2, bool loopBounce, bool unscaledTime)
+        private static async Task UBounceImageColorAsync(Image image, float duration1, Color endColor1, float duration2, Color endColor2, CurveType curve, bool loop, bool unscaledTime)
         {
-            while (loopBounce)
+            while (loop)
             {
                 float timer = 0;
                 Color originalColor = image.color;
@@ -178,7 +180,7 @@ namespace Utilities
 
                     timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                    image.color = Color.Lerp(originalColor, endColor1, timer / duration1);
+                    image.color = Color.Lerp(originalColor, endColor1, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration1));
 
                     await Task.Yield();
                 }
@@ -201,7 +203,7 @@ namespace Utilities
 
                     timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                    image.color = Color.Lerp(originalColor, endColor2, timer / duration2);
+                    image.color = Color.Lerp(originalColor, endColor2, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
 
                     await Task.Yield();
                 }

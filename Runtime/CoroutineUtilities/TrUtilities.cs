@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -125,7 +126,7 @@ namespace Utilities
 
         // Change position
         private static Dictionary<Transform, Task> currentChangedPos = new();
-        public static void UChangePosition(this Transform tr, float duration, Vector3 newPos, bool unscaledTime = false)
+        public static void UChangePosition(this Transform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (duration == 0) 
             {
@@ -138,15 +139,15 @@ namespace Utilities
                 if(!positionsToStop.Contains(tr))
                     positionsToStop.Add(tr);
 
-                currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, unscaledTime);
+                currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
             else
             {
-                currentChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos, unscaledTime));
+                currentChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangePositionAsync(Transform tr, float duration, Vector3 newPos, bool unscaledTime)
+        private static async Task UChangePositionAsync(Transform tr, float duration, Vector3 newPos, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.position;
@@ -163,7 +164,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.position = Vector3.Lerp(originalPos, newPos, timer / duration);
+                tr.position = Vector3.Lerp(originalPos, newPos, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -177,7 +178,7 @@ namespace Utilities
 
         // Change position with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedPos = new();
-        public static void UChangePosition(this RectTransform tr, float duration, Vector3 newPos, bool unscaledTime = false)
+        public static void UChangePosition(this RectTransform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if(duration == 0)
             {
@@ -190,15 +191,15 @@ namespace Utilities
                 if (!positionsToStop.Contains(tr))
                     positionsToStop.Add(tr);
 
-                currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, unscaledTime);
+                currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
             else
             {
-                currentRectChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos, unscaledTime));
+                currentRectChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangePositionAsync(RectTransform tr, float duration, Vector3 newPos, bool unscaledTime)
+        private static async Task UChangePositionAsync(RectTransform tr, float duration, Vector3 newPos, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.position;
@@ -215,7 +216,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.position = Vector3.Lerp(originalPos, newPos, timer / duration);
+                tr.position = Vector3.Lerp(originalPos, newPos, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -232,7 +233,7 @@ namespace Utilities
 
         // Change rotation
         private static Dictionary<Transform, Task> currentChangedRot = new();
-        public static void UChangeRotation(this Transform tr, float duration, Quaternion newRot, bool unscaledTime = false)
+        public static void UChangeRotation(this Transform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if(duration == 0)
             {
@@ -245,15 +246,15 @@ namespace Utilities
                 if (!rotationsToStop.Contains(tr))
                     rotationsToStop.Add(tr);
 
-                currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, unscaledTime);
+                currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
             else
             {
-                currentChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, unscaledTime));
+                currentChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, curve,unscaledTime));
             }
         }
 
-        private static async Task UChangeRotationAsync(Transform tr, float duration, Quaternion newRot, bool unscaledTime)
+        private static async Task UChangeRotationAsync(Transform tr, float duration, Quaternion newRot, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.rotation;
@@ -270,7 +271,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.rotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
+                tr.rotation = Quaternion.Lerp(originalRot, newRot, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -284,7 +285,7 @@ namespace Utilities
 
         // Change rotation with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedRot = new();
-        public static void UChangeRotation(this RectTransform tr, float duration, Quaternion newRot, bool unscaledTime = false)
+        public static void UChangeRotation(this RectTransform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (duration == 0)
             {
@@ -294,18 +295,18 @@ namespace Utilities
 
             if (currentRectChangedRot.Keys.Contains(tr))
             {
-                if (!transformToStop.Contains(tr))
-                    transformToStop.Add(tr);
+                if (!rotationsToStop.Contains(tr))
+                    rotationsToStop.Add(tr);
 
-                currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, unscaledTime);
+                currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
             else
             {
-                currentRectChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, unscaledTime));
+                currentRectChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeRotationAsync(RectTransform tr, float duration, Quaternion newRot, bool unscaledTime)
+        private static async Task UChangeRotationAsync(RectTransform tr, float duration, Quaternion newRot, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.rotation;
@@ -313,16 +314,16 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rotationsToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rotationsToStop.Remove(tr);
 
                     return;
                 }
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.rotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
+                tr.rotation = Quaternion.Lerp(originalRot, newRot, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -339,7 +340,7 @@ namespace Utilities
 
         // Change scale
         private static Dictionary<Transform, Task> currentChangedScale = new();
-        public static void UChangeScale(this Transform tr, float duration, Vector3 newSize, bool unscaledTime = false)
+        public static void UChangeScale(this Transform tr, float duration, Vector3 newSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if(duration == 0)
             {
@@ -352,15 +353,15 @@ namespace Utilities
                 if(!scalesToStop.Contains(tr))
                     scalesToStop.Add(tr);
 
-                currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, unscaledTime);
+                currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, curve, unscaledTime);
             }
             else
             {
-                currentChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize, unscaledTime));
+                currentChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeScaleAsync(Transform tr, float duration, Vector3 newSize, bool unscaledTime)
+        private static async Task UChangeScaleAsync(Transform tr, float duration, Vector3 newSize, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -377,7 +378,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
+                tr.localScale = Vector3.Lerp(originalScale, newSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -390,7 +391,7 @@ namespace Utilities
 
 
         private static Dictionary<RectTransform, Task> currentRectChangedScale = new();
-        public static void UChangeScale(this RectTransform tr, float duration, Vector3 newSize, bool unscaledTime = false)
+        public static void UChangeScale(this RectTransform tr, float duration, Vector3 newSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (duration == 0)
             {
@@ -403,15 +404,15 @@ namespace Utilities
                 if (!scalesToStop.Contains(tr))
                     scalesToStop.Add(tr);
 
-                currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, unscaledTime);
+                currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, curve, unscaledTime);
             }
             else
             {
-                currentRectChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize, unscaledTime));
+                currentRectChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeScaleAsync(RectTransform tr, float duration, Vector3 newSize, bool unscaledTime)
+        private static async Task UChangeScaleAsync(RectTransform tr, float duration, Vector3 newSize, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -428,7 +429,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
+                tr.localScale = Vector3.Lerp(originalScale, newSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -444,22 +445,21 @@ namespace Utilities
         #region Bounce Scale
 
         // Bounce
-        private static Dictionary<Transform, Task> currentBouncedScale = new();
-        public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime = false)
+        public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
-            if (currentBouncedScale.Keys.Contains(tr))
+            if (currentChangedScale.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                scalesToStop.Add(tr);
 
-                currentBouncedScale[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime);
+                currentChangedScale[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
             }
             else
             {
-                currentBouncedScale.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime));
+                currentChangedScale.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
             }
         }
 
-        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime)
+        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -467,16 +467,16 @@ namespace Utilities
             while (timer < duration1)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (scalesToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    scalesToStop.Remove(tr);
 
                     return;
                 }
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localScale = Vector3.Lerp(originalScale, bounceSize, timer / duration1);
+                tr.localScale = Vector3.Lerp(originalScale, bounceSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration1));
 
                 await Task.Yield();
             }
@@ -488,16 +488,16 @@ namespace Utilities
             while (timer < duration2)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (scalesToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    scalesToStop.Remove(tr);
 
                     return;
                 }
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localScale = Vector3.Lerp(bounceSize, endSize, timer / duration2);
+                tr.localScale = Vector3.Lerp(bounceSize, endSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
 
                 await Task.Yield();
             }
@@ -511,21 +511,21 @@ namespace Utilities
 
         // Change rotation with rect transform
         private static Dictionary<Transform, Task> currentBouncedRectTr = new();
-        public static void UBounce(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime = false)
+        public static void UBounce(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (currentBouncedRectTr.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentBouncedRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime);
+                currentBouncedRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
             }
             else
             {
-                currentBouncedRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime));
+                currentBouncedRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
             }
         }
 
-        private static async Task UBounceAsync(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime)
+        private static async Task UBounceAsync(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -542,7 +542,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localScale = Vector3.Lerp(originalScale, bounceSize, timer / duration1);
+                tr.localScale = Vector3.Lerp(originalScale, bounceSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration1));
 
                 await Task.Yield();
             }
@@ -563,7 +563,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localScale = Vector3.Lerp(bounceSize, endSize, timer / duration2);
+                tr.localScale = Vector3.Lerp(bounceSize, endSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
 
                 await Task.Yield();
             }
@@ -690,7 +690,7 @@ namespace Utilities
 
         // Change position
         private static Dictionary<Transform, Task> currentChangedPosLocal = new();
-        public static void UChangeLocalPosition(this Transform tr, float duration, Vector3 newPos, bool unscaledTime = false)
+        public static void UChangeLocalPosition(this Transform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if(duration == 0)
             {
@@ -702,15 +702,15 @@ namespace Utilities
             {
                 transformToStop.Add(tr);
 
-                currentChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime);
+                currentChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
             else
             {
-                currentChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime));
+                currentChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalPositionAsync(Transform tr, float duration, Vector3 newPos, bool unscaledTime)
+        private static async Task UChangeLocalPositionAsync(Transform tr, float duration, Vector3 newPos, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.localPosition;
@@ -727,7 +727,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localPosition = Vector3.Lerp(originalPos, newPos, timer / duration);
+                tr.localPosition = Vector3.Lerp(originalPos, newPos, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -741,7 +741,7 @@ namespace Utilities
 
         // Change position with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedPosLocal = new();
-        public static void UChangeLocalPosition(this RectTransform tr, float duration, Vector3 newPos, bool unscaledTime = false)
+        public static void UChangeLocalPosition(this RectTransform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (duration == 0)
             {
@@ -753,15 +753,15 @@ namespace Utilities
             {
                 transformToStop.Add(tr);
 
-                currentRectChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime);
+                currentRectChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
             else
             {
-                currentRectChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime));
+                currentRectChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalPositionAsync(RectTransform tr, float duration, Vector3 newPos, bool unscaledTime)
+        private static async Task UChangeLocalPositionAsync(RectTransform tr, float duration, Vector3 newPos, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.localPosition;
@@ -778,7 +778,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localPosition = Vector3.Lerp(originalPos, newPos, timer / duration);
+                tr.localPosition = Vector3.Lerp(originalPos, newPos, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -795,7 +795,7 @@ namespace Utilities
 
         // Change rotation
         private static Dictionary<Transform, Task> currentChangedRotLocal = new();
-        public static void UChangeLocalRotation(this Transform tr, float duration, Quaternion newRot, bool unscaledTime = false)
+        public static void UChangeLocalRotation(this Transform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if(duration == 0)
             {
@@ -807,15 +807,15 @@ namespace Utilities
             {
                 transformToStop.Add(tr);
 
-                currentChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime);
+                currentChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
             else
             {
-                currentChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime));
+                currentChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalRotationAsync(Transform tr, float duration, Quaternion newRot, bool unscaledTime)
+        private static async Task UChangeLocalRotationAsync(Transform tr, float duration, Quaternion newRot, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.localRotation;
@@ -832,7 +832,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localRotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
+                tr.localRotation = Quaternion.Lerp(originalRot, newRot, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
@@ -846,7 +846,7 @@ namespace Utilities
 
         // Change rotation with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedRotLocal = new();
-        public static void UChangeLocalRotation(this RectTransform tr, float duration, Quaternion newRot, bool unscaledTime)
+        public static void UChangeLocalRotation(this RectTransform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
             if (duration == 0)
             {
@@ -858,15 +858,15 @@ namespace Utilities
             {
                 transformToStop.Add(tr);
 
-                currentRectChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime);
+                currentRectChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
             else
             {
-                currentRectChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime));
+                currentRectChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot, curve, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalRotationAsync(RectTransform tr, float duration, Quaternion newRot, bool unscaledTime)
+        private static async Task UChangeLocalRotationAsync(RectTransform tr, float duration, Quaternion newRot, CurveType curve, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.localRotation;
@@ -883,7 +883,7 @@ namespace Utilities
 
                 timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                tr.localRotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
+                tr.localRotation = Quaternion.Lerp(originalRot, newRot, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
 
                 await Task.Yield();
             }
