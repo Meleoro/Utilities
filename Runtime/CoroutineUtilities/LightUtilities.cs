@@ -18,20 +18,26 @@ namespace Utilities
         #region Lerp Light
 
         private static Dictionary<Light, Task> currentLerpedLights = new();
-        public static void ULerpIntensity(this Light light, float duration, float newIntensity, AnimationCurve curve = null)
+        public static void ULerpIntensity(this Light light, float duration, float newIntensity, AnimationCurve curve = null, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                light.intensity = newIntensity;
+                return;
+            }
+
             if (currentLerpedLights.Keys.Contains(light))
             {
                 lightsToStop.Add(light);
-                currentLerpedLights[light] = LerpIntensityAsync(light, duration, newIntensity, curve);
+                currentLerpedLights[light] = LerpIntensityAsync(light, duration, newIntensity, curve, unscaledTime);
             }
             else
             {
-                currentLerpedLights.Add(light, LerpIntensityAsync(light, duration, newIntensity, curve));
+                currentLerpedLights.Add(light, LerpIntensityAsync(light, duration, newIntensity, curve, unscaledTime));
             }
         }
 
-        private static async Task LerpIntensityAsync(Light light, float duration, float newIntensity, AnimationCurve curve)
+        private static async Task LerpIntensityAsync(Light light, float duration, float newIntensity, AnimationCurve curve, bool unscaledTime)
         {
             float timer = 0;
             float startIntensity = light.intensity;
@@ -46,7 +52,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 if(curve is null)
                     light.intensity = Mathf.Lerp(startIntensity, newIntensity, timer / duration);
@@ -57,10 +63,8 @@ namespace Utilities
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             light.intensity = newIntensity;
-
-            await Task.Yield();
-
             currentLerpedLights.Remove(light);
         }
 
@@ -70,20 +74,26 @@ namespace Utilities
         #region Lerp Light 2D
 
         private static Dictionary<Light2D, Task> currentLerpedLights2D = new();
-        public static void ULerpIntensity(this Light2D light, float duration, float newIntensity, AnimationCurve curve = null)
+        public static void ULerpIntensity(this Light2D light, float duration, float newIntensity, AnimationCurve curve = null, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                light.intensity = newIntensity;
+                return;
+            }
+
             if (currentLerpedLights2D.Keys.Contains(light))
             {
                 lights2DToStop.Add(light);
-                currentLerpedLights2D[light] = LerpIntensityAsync(light, duration, newIntensity, curve);
+                currentLerpedLights2D[light] = LerpIntensityAsync(light, duration, newIntensity, curve, unscaledTime);
             }
             else
             {
-                currentLerpedLights2D.Add(light, LerpIntensityAsync(light, duration, newIntensity, curve));
+                currentLerpedLights2D.Add(light, LerpIntensityAsync(light, duration, newIntensity, curve, unscaledTime));
             }
         }
 
-        private static async Task LerpIntensityAsync(Light2D light, float duration, float newIntensity, AnimationCurve curve)
+        private static async Task LerpIntensityAsync(Light2D light, float duration, float newIntensity, AnimationCurve curve, bool unscaledTime)
         {
             float timer = 0;
             float startIntensity = light.intensity;
@@ -98,7 +108,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 if (curve is null)
                     light.intensity = Mathf.Lerp(startIntensity, newIntensity, timer / duration);
@@ -109,10 +119,8 @@ namespace Utilities
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             light.intensity = newIntensity;
-
-            await Task.Yield();
-
             currentLerpedLights2D.Remove(light);
         }
 

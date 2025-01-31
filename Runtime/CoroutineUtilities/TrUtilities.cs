@@ -60,10 +60,8 @@ namespace Utilities
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.position = originalPos;
-
-            await Task.Yield();
-
             currentShakePositions.Remove(tr);
         }
 
@@ -127,22 +125,28 @@ namespace Utilities
 
         // Change position
         private static Dictionary<Transform, Task> currentChangedPos = new();
-        public static void UChangePosition(this Transform tr, float duration, Vector3 newPos)
+        public static void UChangePosition(this Transform tr, float duration, Vector3 newPos, bool unscaledTime = false)
         {
+            if (duration == 0) 
+            {
+                tr.position = newPos;
+                return;
+            }
+
             if (currentChangedPos.Keys.Contains(tr))
             {
                 if(!positionsToStop.Contains(tr))
                     positionsToStop.Add(tr);
 
-                currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos);
+                currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, unscaledTime);
             }
             else
             {
-                currentChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos));
+                currentChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos, unscaledTime));
             }
         }
 
-        private static async Task UChangePositionAsync(Transform tr, float duration, Vector3 newPos)
+        private static async Task UChangePositionAsync(Transform tr, float duration, Vector3 newPos, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.position;
@@ -157,17 +161,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.position = Vector3.Lerp(originalPos, newPos, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.position = newPos;
-
-            await Task.Yield();
-
             currentChangedPos.Remove(tr);
         }
 
@@ -175,22 +177,28 @@ namespace Utilities
 
         // Change position with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedPos = new();
-        public static void UChangePosition(this RectTransform tr, float duration, Vector3 newPos)
+        public static void UChangePosition(this RectTransform tr, float duration, Vector3 newPos, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                tr.position = newPos;
+                return;
+            }
+
             if (currentRectChangedPos.Keys.Contains(tr))
             {
                 if (!positionsToStop.Contains(tr))
                     positionsToStop.Add(tr);
 
-                currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos);
+                currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, unscaledTime);
             }
             else
             {
-                currentRectChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos));
+                currentRectChangedPos.Add(tr, UChangePositionAsync(tr, duration, newPos, unscaledTime));
             }
         }
 
-        private static async Task UChangePositionAsync(RectTransform tr, float duration, Vector3 newPos)
+        private static async Task UChangePositionAsync(RectTransform tr, float duration, Vector3 newPos, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.position;
@@ -205,7 +213,7 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.position = Vector3.Lerp(originalPos, newPos, timer / duration);
 
@@ -213,8 +221,6 @@ namespace Utilities
             }
 
             tr.position = newPos;
-
-            await Task.Yield();
 
             currentRectChangedPos.Remove(tr);
         }
@@ -226,22 +232,28 @@ namespace Utilities
 
         // Change rotation
         private static Dictionary<Transform, Task> currentChangedRot = new();
-        public static void UChangeRotation(this Transform tr, float duration, Quaternion newRot)
+        public static void UChangeRotation(this Transform tr, float duration, Quaternion newRot, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                tr.rotation = newRot;
+                return;
+            }
+
             if (currentChangedRot.Keys.Contains(tr))
             {
                 if (!rotationsToStop.Contains(tr))
                     rotationsToStop.Add(tr);
 
-                currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot);
+                currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, unscaledTime);
             }
             else
             {
-                currentChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot));
+                currentChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, unscaledTime));
             }
         }
 
-        private static async Task UChangeRotationAsync(Transform tr, float duration, Quaternion newRot)
+        private static async Task UChangeRotationAsync(Transform tr, float duration, Quaternion newRot, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.rotation;
@@ -256,17 +268,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.rotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.rotation = newRot;
-
-            await Task.Yield();
-
             currentChangedRot.Remove(tr);
         }
 
@@ -274,22 +284,28 @@ namespace Utilities
 
         // Change rotation with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedRot = new();
-        public static void UChangeRotation(this RectTransform tr, float duration, Quaternion newRot)
+        public static void UChangeRotation(this RectTransform tr, float duration, Quaternion newRot, bool unscaledTime = false)
         {
+            if (duration == 0)
+            {
+                tr.rotation = newRot;
+                return;
+            }
+
             if (currentRectChangedRot.Keys.Contains(tr))
             {
                 if (!transformToStop.Contains(tr))
                     transformToStop.Add(tr);
 
-                currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot);
+                currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, unscaledTime);
             }
             else
             {
-                currentRectChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot));
+                currentRectChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, unscaledTime));
             }
         }
 
-        private static async Task UChangeRotationAsync(RectTransform tr, float duration, Quaternion newRot)
+        private static async Task UChangeRotationAsync(RectTransform tr, float duration, Quaternion newRot, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.rotation;
@@ -304,17 +320,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.rotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.rotation = newRot;
-
-            await Task.Yield();
-
             currentRectChangedRot.Remove(tr);
         }
 
@@ -323,24 +337,30 @@ namespace Utilities
 
         #region Scale
 
-        // Change rotation
+        // Change scale
         private static Dictionary<Transform, Task> currentChangedScale = new();
-        public static void UChangeScale(this Transform tr, float duration, Vector3 newSize)
+        public static void UChangeScale(this Transform tr, float duration, Vector3 newSize, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                tr.localScale = newSize;
+                return;
+            }
+
             if (currentChangedScale.Keys.Contains(tr))
             {
                 if(!scalesToStop.Contains(tr))
                     scalesToStop.Add(tr);
 
-                currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
+                currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, unscaledTime);
             }
             else
             {
-                currentChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize));
+                currentChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize, unscaledTime));
             }
         }
 
-        private static async Task UChangeScaleAsync(Transform tr, float duration, Vector3 newSize)
+        private static async Task UChangeScaleAsync(Transform tr, float duration, Vector3 newSize, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -355,40 +375,43 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localScale = newSize;
-
-            await Task.Yield();
-
             currentChangedScale.Remove(tr);
         }
 
 
 
-        // Change rotation with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedScale = new();
-        public static void UChangeScale(this RectTransform tr, float duration, Vector3 newSize)
+        public static void UChangeScale(this RectTransform tr, float duration, Vector3 newSize, bool unscaledTime = false)
         {
+            if (duration == 0)
+            {
+                tr.localScale = newSize;
+                return;
+            }
+
             if (currentRectChangedScale.Keys.Contains(tr))
             {
                 if (!scalesToStop.Contains(tr))
                     scalesToStop.Add(tr);
 
-                currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize);
+                currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, unscaledTime);
             }
             else
             {
-                currentRectChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize));
+                currentRectChangedScale.Add(tr, UChangeScaleAsync(tr, duration, newSize, unscaledTime));
             }
         }
 
-        private static async Task UChangeScaleAsync(RectTransform tr, float duration, Vector3 newSize)
+        private static async Task UChangeScaleAsync(RectTransform tr, float duration, Vector3 newSize, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -403,17 +426,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, newSize, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localScale = newSize;
-
-            await Task.Yield();
-
             currentRectChangedScale.Remove(tr);
         }
 
@@ -424,21 +445,21 @@ namespace Utilities
 
         // Bounce
         private static Dictionary<Transform, Task> currentBouncedScale = new();
-        public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime = false)
         {
             if (currentBouncedScale.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentBouncedScale[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize);
+                currentBouncedScale[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime);
             }
             else
             {
-                currentBouncedScale.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize));
+                currentBouncedScale.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime));
             }
         }
 
-        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -453,15 +474,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, bounceSize, timer / duration1);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localScale = bounceSize;
-
             timer = 0;
 
             while (timer < duration2)
@@ -474,17 +495,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(bounceSize, endSize, timer / duration2);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localScale = endSize;
-
-            await Task.Yield();
-
             currentChangedScale.Remove(tr);
         }
 
@@ -492,21 +511,21 @@ namespace Utilities
 
         // Change rotation with rect transform
         private static Dictionary<Transform, Task> currentBouncedRectTr = new();
-        public static void UBounce(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        public static void UBounce(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime = false)
         {
             if (currentBouncedRectTr.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentBouncedRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize);
+                currentBouncedRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime);
             }
             else
             {
-                currentBouncedRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize));
+                currentBouncedRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, unscaledTime));
             }
         }
 
-        private static async Task UBounceAsync(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize)
+        private static async Task UBounceAsync(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalScale = tr.localScale;
@@ -521,15 +540,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(originalScale, bounceSize, timer / duration1);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localScale = bounceSize;
-
             timer = 0;
 
             while (timer < duration2)
@@ -542,17 +561,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localScale = Vector3.Lerp(bounceSize, endSize, timer / duration2);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localScale = endSize;
-
-            await Task.Yield();
-
             currentBouncedRectTr.Remove(tr);
         }
 
@@ -608,10 +625,8 @@ namespace Utilities
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localPosition = originalPos;
-
-            await Task.Yield();
-
             currentShakePositionsLocal.Remove(tr);
         }
 
@@ -675,21 +690,27 @@ namespace Utilities
 
         // Change position
         private static Dictionary<Transform, Task> currentChangedPosLocal = new();
-        public static void UChangeLocalPosition(this Transform tr, float duration, Vector3 newPos)
+        public static void UChangeLocalPosition(this Transform tr, float duration, Vector3 newPos, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                tr.localPosition = newPos;
+                return;
+            }
+
             if (currentChangedPosLocal.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos);
+                currentChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime);
             }
             else
             {
-                currentChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos));
+                currentChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalPositionAsync(Transform tr, float duration, Vector3 newPos)
+        private static async Task UChangeLocalPositionAsync(Transform tr, float duration, Vector3 newPos, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.localPosition;
@@ -704,17 +725,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localPosition = Vector3.Lerp(originalPos, newPos, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localPosition = newPos;
-
-            await Task.Yield();
-
             currentChangedPosLocal.Remove(tr);
         }
 
@@ -722,21 +741,27 @@ namespace Utilities
 
         // Change position with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedPosLocal = new();
-        public static void UChangeLocalPosition(this RectTransform tr, float duration, Vector3 newPos)
+        public static void UChangeLocalPosition(this RectTransform tr, float duration, Vector3 newPos, bool unscaledTime = false)
         {
+            if (duration == 0)
+            {
+                tr.localPosition = newPos;
+                return;
+            }
+
             if (currentRectChangedPosLocal.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentRectChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos);
+                currentRectChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime);
             }
             else
             {
-                currentRectChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos));
+                currentRectChangedPosLocal.Add(tr, UChangeLocalPositionAsync(tr, duration, newPos, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalPositionAsync(RectTransform tr, float duration, Vector3 newPos)
+        private static async Task UChangeLocalPositionAsync(RectTransform tr, float duration, Vector3 newPos, bool unscaledTime)
         {
             float timer = 0;
             Vector3 originalPos = tr.localPosition;
@@ -751,17 +776,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localPosition = Vector3.Lerp(originalPos, newPos, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localPosition = newPos;
-
-            await Task.Yield();
-
             currentRectChangedPosLocal.Remove(tr);
         }
 
@@ -772,21 +795,27 @@ namespace Utilities
 
         // Change rotation
         private static Dictionary<Transform, Task> currentChangedRotLocal = new();
-        public static void UChangeLocalRotation(this Transform tr, float duration, Quaternion newRot)
+        public static void UChangeLocalRotation(this Transform tr, float duration, Quaternion newRot, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                tr.localRotation = newRot;
+                return;
+            }
+
             if (currentChangedRotLocal.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot);
+                currentChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime);
             }
             else
             {
-                currentChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot));
+                currentChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalRotationAsync(Transform tr, float duration, Quaternion newRot)
+        private static async Task UChangeLocalRotationAsync(Transform tr, float duration, Quaternion newRot, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.localRotation;
@@ -801,17 +830,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localRotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localRotation = newRot;
-
-            await Task.Yield();
-
             currentChangedRotLocal.Remove(tr);
         }
 
@@ -819,21 +846,27 @@ namespace Utilities
 
         // Change rotation with rect transform
         private static Dictionary<RectTransform, Task> currentRectChangedRotLocal = new();
-        public static void UChangeLocalRotation(this RectTransform tr, float duration, Quaternion newRot)
+        public static void UChangeLocalRotation(this RectTransform tr, float duration, Quaternion newRot, bool unscaledTime)
         {
+            if (duration == 0)
+            {
+                tr.localRotation = newRot;
+                return;
+            }
+
             if (currentRectChangedRotLocal.Keys.Contains(tr))
             {
                 transformToStop.Add(tr);
 
-                currentRectChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot);
+                currentRectChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime);
             }
             else
             {
-                currentRectChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot));
+                currentRectChangedRotLocal.Add(tr, UChangeLocalRotationAsync(tr, duration, newRot, unscaledTime));
             }
         }
 
-        private static async Task UChangeLocalRotationAsync(RectTransform tr, float duration, Quaternion newRot)
+        private static async Task UChangeLocalRotationAsync(RectTransform tr, float duration, Quaternion newRot, bool unscaledTime)
         {
             float timer = 0;
             Quaternion originalRot = tr.localRotation;
@@ -848,17 +881,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 tr.localRotation = Quaternion.Lerp(originalRot, newRot, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localRotation = newRot;
-
-            await Task.Yield();
-
             currentRectChangedRotLocal.Remove(tr);
         }
 

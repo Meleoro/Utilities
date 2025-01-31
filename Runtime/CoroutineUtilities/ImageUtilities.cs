@@ -9,28 +9,40 @@ namespace Utilities
 {
     public static class ImageUtilities 
     {
-        private static List<Image> imagesToStop = new List<Image>();
-
 
         #region Fade Image
 
-        // Fade Image
-        private static Dictionary<Image, Task> currentChangedFade = new();
-        public static void UFadeImage(this Image image, float duration, float fadeValue)
+        public static void UStopFadeImage(this Image image)
         {
             if (currentChangedFade.Keys.Contains(image))
             {
-                imagesToStop.Add(image);
-
-                currentChangedFade[image] = UFadeImageAsync(image, duration, fadeValue);
-            }
-            else
-            {
-                currentChangedFade.Add(image, UFadeImageAsync(image, duration, fadeValue));
+                fadesToStop.Add(image);
             }
         }
 
-        private static async Task UFadeImageAsync(Image image, float duration, float fadeValue)
+        private static List<Image> fadesToStop = new List<Image>();
+        private static Dictionary<Image, Task> currentChangedFade = new();
+        public static void UFadeImage(this Image image, float duration, float fadeValue, bool unscaledTime = false)
+        {
+            if(duration == 0)
+            {
+                image.color = new Color(image.color.r, image.color.g, image.color.b, fadeValue);
+                return;
+            }
+
+            if (currentChangedFade.Keys.Contains(image))
+            {
+                fadesToStop.Add(image);
+
+                currentChangedFade[image] = UFadeImageAsync(image, duration, fadeValue, unscaledTime);
+            }
+            else
+            {
+                currentChangedFade.Add(image, UFadeImageAsync(image, duration, fadeValue, unscaledTime));
+            }
+        }
+
+        private static async Task UFadeImageAsync(Image image, float duration, float fadeValue, bool unscaledTime)
         {
             float timer = 0;
             float originalFade = image.color.a;
@@ -38,25 +50,167 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (imagesToStop.Contains(image) && timer != 0)
+                if (fadesToStop.Contains(image) && timer != 0)
                 {
-                    imagesToStop.Remove(image);
+                    fadesToStop.Remove(image);
 
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 image.color = new Color(image.color.r, image.color.g, image.color.b, Mathf.Lerp(originalFade, fadeValue, timer / duration));
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             image.color = new Color(image.color.r, image.color.g, image.color.b, fadeValue);
-
-            await Task.Yield();
-
             currentChangedFade.Remove(image);
+        }
+
+        #endregion
+
+
+        #region Lerp Image Color
+
+        public static void UStopColorImageColorLerp(this Image image)
+        {
+            if (currentLerpedColor.Keys.Contains(image))
+            {
+                lerpedColorsToStop.Add(image);
+            }
+        }
+
+        private static List<Image> lerpedColorsToStop = new List<Image>();
+        private static Dictionary<Image, Task> currentLerpedColor = new();
+        public static void ULerpImageColor(this Image image, float duration, Color endColor, bool unscaledTime = false)
+        {
+            if (duration == 0)
+            {
+                image.color = endColor;
+                return;
+            }
+
+            if (currentLerpedColor.Keys.Contains(image))
+            {
+                lerpedColorsToStop.Add(image);
+
+                currentLerpedColor[image] = ULerpImageColorAsync(image, duration, endColor, unscaledTime);
+            }
+            else
+            {
+                currentLerpedColor.Add(image, ULerpImageColorAsync(image, duration, endColor, unscaledTime));
+            }
+        }
+
+        private static async Task ULerpImageColorAsync(Image image, float duration, Color endColor, bool unscaledTime)
+        {
+            float timer = 0;
+            Color originalColor = image.color;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (lerpedColorsToStop.Contains(image) && timer != 0)
+                {
+                    lerpedColorsToStop.Remove(image);
+
+                    return;
+                }
+
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                image.color = Color.Lerp(originalColor, endColor, timer / duration);
+
+                await Task.Yield();
+            }
+
+            if (!Application.isPlaying) return;
+            image.color = endColor;
+            currentLerpedColor.Remove(image);
+        }
+
+        #endregion
+
+
+        #region Bounce Image Color
+
+        public static void UStopColorImageColorBounce(this Image image)
+        {
+            if (currentBouncedColors.Keys.Contains(image))
+            {
+                bouncedColorsToStop.Add(image);
+            }
+        }
+
+        private static List<Image> bouncedColorsToStop = new List<Image>();
+        private static Dictionary<Image, Task> currentBouncedColors = new();
+        public static void UBounceImageColor(this Image image, float duration1, Color endColor1, float duration2, Color endColor2, bool loopBounce = false, bool unscaledTime = false)
+        {
+            if (currentBouncedColors.Keys.Contains(image))
+            {
+                bouncedColorsToStop.Add(image);
+
+                currentBouncedColors[image] = UBounceImageColorAsync(image, duration1, endColor1, duration2, endColor2, loopBounce, unscaledTime);
+            }
+            else
+            {
+                currentBouncedColors.Add(image, UBounceImageColorAsync(image, duration1, endColor1, duration2, endColor2, loopBounce, unscaledTime));
+            }
+        }
+
+        private static async Task UBounceImageColorAsync(Image image, float duration1, Color endColor1, float duration2, Color endColor2, bool loopBounce, bool unscaledTime)
+        {
+            while (loopBounce)
+            {
+                float timer = 0;
+                Color originalColor = image.color;
+                while (timer < duration1)
+                {
+                    if (!Application.isPlaying) return;
+                    if (bouncedColorsToStop.Contains(image) && timer != 0)
+                    {
+                        bouncedColorsToStop.Remove(image);
+
+                        return;
+                    }
+
+                    timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                    image.color = Color.Lerp(originalColor, endColor1, timer / duration1);
+
+                    await Task.Yield();
+                }
+
+                if (!Application.isPlaying) return;
+                image.color = endColor1;
+                timer = 0;
+
+                await Task.Yield();
+
+                while (timer < duration2)
+                {
+                    if (!Application.isPlaying) return;
+                    if (bouncedColorsToStop.Contains(image) && timer != 0)
+                    {
+                        bouncedColorsToStop.Remove(image);
+
+                        return;
+                    }
+
+                    timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                    image.color = Color.Lerp(originalColor, endColor2, timer / duration2);
+
+                    await Task.Yield();
+                }
+
+                if (!Application.isPlaying) return;
+                image.color = endColor2;
+            }
+
+            currentBouncedColors.Remove(image);
         }
 
         #endregion

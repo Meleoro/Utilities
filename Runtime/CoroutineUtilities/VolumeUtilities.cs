@@ -18,21 +18,27 @@ namespace Utilities
 
         // Lerp Volume Weight
         private static Dictionary<Volume, Task> currentLerpedVolumeWeight = new();
-        public static void ULerpWeight(this Volume volume, float duration, float endValue)
+        public static void ULerpWeight(this Volume volume, float duration, float endValue, bool unscaledTime = false)
         {
+            if(duration == 0)
+            {
+                volume.weight = endValue;
+                return;
+            }
+
             if (currentLerpedVolumeWeight.Keys.Contains(volume))
             {
                 volumesToStop.Add(volume);
 
-                currentLerpedVolumeWeight[volume] = ULerpWeightAsync(volume, duration, endValue);
+                currentLerpedVolumeWeight[volume] = ULerpWeightAsync(volume, duration, endValue, unscaledTime);
             }
             else
             {
-                currentLerpedVolumeWeight.Add(volume, ULerpWeightAsync(volume, duration, endValue));
+                currentLerpedVolumeWeight.Add(volume, ULerpWeightAsync(volume, duration, endValue, unscaledTime));
             }
         }
 
-        private static async Task ULerpWeightAsync(Volume volume, float duration, float endValue)
+        private static async Task ULerpWeightAsync(Volume volume, float duration, float endValue, bool unscaledTime)
         {
             float timer = 0;
             float originalWeight = volume.weight;
@@ -47,68 +53,16 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 volume.weight = Mathf.Lerp(originalWeight, endValue, timer / duration);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             volume.weight = endValue;
-
-            await Task.Yield();
-
             currentLerpedVolumeWeight.Remove(volume);
-        }
-
-        #endregion
-
-
-        #region Lerp Volume Unscaled
-
-        // Lerp Volume Weight
-        private static Dictionary<Volume, Task> currentUnscaledLerpedVolumeWeight = new();
-        public static void ULerpWeightUnscaled(this Volume volume, float duration, float endValue)
-        {
-            if (currentUnscaledLerpedVolumeWeight.Keys.Contains(volume))
-            {
-                volumesToStop.Add(volume);
-
-                currentUnscaledLerpedVolumeWeight[volume] = ULerpWeightUnscaledAsync(volume, duration, endValue);
-            }
-            else
-            {
-                currentUnscaledLerpedVolumeWeight.Add(volume, ULerpWeightUnscaledAsync(volume, duration, endValue));
-            }
-        }
-
-        private static async Task ULerpWeightUnscaledAsync(Volume volume, float duration, float endValue)
-        {
-            float timer = 0;
-            float originalWeight = volume.weight;
-
-            while (timer < duration)
-            {
-                if (!Application.isPlaying) return;
-                if (volumesToStop.Contains(volume) && timer != 0)
-                {
-                    volumesToStop.Remove(volume);
-
-                    return;
-                }
-
-                timer += Time.unscaledDeltaTime;
-
-                volume.weight = Mathf.Lerp(originalWeight, endValue, timer / duration);
-
-                await Task.Yield();
-            }
-
-            volume.weight = endValue;
-
-            await Task.Yield();
-
-            currentUnscaledLerpedVolumeWeight.Remove(volume);
         }
 
         #endregion
@@ -118,21 +72,21 @@ namespace Utilities
 
         // Lerp Volume Weight
         private static Dictionary<Volume, Task> currentFlashedVolumeWeight = new();
-        public static void UFlashWeight(this Volume volume, float duration1, float flashValue, float duration2, float endValue)
+        public static void UFlashWeight(this Volume volume, float duration1, float flashValue, float duration2, float endValue, bool unscaledTime = false)
         {
             if (currentFlashedVolumeWeight.Keys.Contains(volume))
             {
                 volumesToStop.Add(volume);
 
-                currentFlashedVolumeWeight[volume] = UFlashWeightAsync(volume, duration1, flashValue, duration2, endValue);
+                currentFlashedVolumeWeight[volume] = UFlashWeightAsync(volume, duration1, flashValue, duration2, endValue, unscaledTime);
             }
             else
             {
-                currentFlashedVolumeWeight.Add(volume, UFlashWeightAsync(volume, duration1, flashValue, duration2, endValue));
+                currentFlashedVolumeWeight.Add(volume, UFlashWeightAsync(volume, duration1, flashValue, duration2, endValue, unscaledTime));
             }
         }
 
-        private static async Task UFlashWeightAsync(Volume volume, float duration1, float flashValue, float duration2, float endValue)
+        private static async Task UFlashWeightAsync(Volume volume, float duration1, float flashValue, float duration2, float endValue, bool unscaledTime)
         {
             float timer = 0;
             float originalWeight = volume.weight;
@@ -147,13 +101,14 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 volume.weight = Mathf.Lerp(originalWeight, flashValue, timer / duration1);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             timer = 0;
             volume.weight = flashValue;
 
@@ -167,17 +122,15 @@ namespace Utilities
                     return;
                 }
 
-                timer += Time.deltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
                 volume.weight = Mathf.Lerp(flashValue, endValue, timer / duration2);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             volume.weight = endValue;
-
-            await Task.Yield();
-
             currentFlashedVolumeWeight.Remove(volume);
         }
 
