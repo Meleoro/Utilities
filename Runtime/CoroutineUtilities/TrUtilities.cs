@@ -7,56 +7,89 @@ using UnityEngine;
 
 namespace Utilities
 {
+    public enum ShakeLockType
+    {
+        None,
+        X,
+        Y,
+        Z,
+        XY,
+        YZ,
+        XZ
+    }
+
+
     public static class TrUtilities
     {
-        private static List<Transform> transformToStop = new List<Transform>();
-        private static List<Transform> positionsToStop = new List<Transform>();
-        private static List<Transform> scalesToStop = new List<Transform>();
-        private static List<Transform> rotationsToStop = new List<Transform>();
-
 
         #region Shake
 
-        // Shake position
-        private static Dictionary<Transform, Task> currentShakePositions = new();
-        public static void UShakePosition(this Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        public static void UStopShakePosition(this Transform tr)
         {
             if (currentShakePositions.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
-
-                currentShakePositions[tr] = UShakePositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
-            }
-            else
-            {
-                currentShakePositions.Add(tr, UShakePositionAsync(tr, duration, intensity, lockX, lockY, lockZ));
+                trShakePositionsToStop.Add(tr);
+                currentShakePositions.Remove(tr);
             }
         }
 
-        private static async Task UShakePositionAsync(Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        private static List<Transform> trShakePositionsToStop = new List<Transform>();
+        private static Dictionary<Transform, Task> currentShakePositions = new();
+        public static void UShakePosition(this Transform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        {
+            if (currentShakePositions.Keys.Contains(tr))
+            {
+                trShakePositionsToStop.Add(tr);
+
+                currentShakePositions[tr] = UShakePositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime);
+            }
+            else
+            {
+                currentShakePositions.Add(tr, UShakePositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime));
+            }
+        }
+
+        private static async Task UShakePositionAsync(Transform tr, float duration, float intensity, float vibrato, ShakeLockType lockedAxis, bool unscaledTime)
         {
             float timer = 0;
             float startIntensity = intensity;
             Vector3 originalPos = tr.position;
 
+            float stepTimer = 0;
+            Vector3 previousPos = tr.position;
+            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (trShakePositionsToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    trShakePositionsToStop.Remove(tr);
 
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+                stepTimer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                if(stepTimer > vibrato)
+                {
+                    stepTimer = 0;
+                    previousPos = currentWantedPos;
+                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
-                tr.position = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                tr.position = Vector3.Lerp(previousPos, currentWantedPos, stepTimer / vibrato);
 
-                if (lockX) tr.position = new Vector3(originalPos.x, tr.position.y, tr.position.z);
-                if (lockY) tr.position = new Vector3(tr.position.x, originalPos.y, tr.position.z);
-                if (lockZ) tr.position = new Vector3(tr.position.x, tr.position.y, originalPos.z);
+                if (lockedAxis == ShakeLockType.X || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.XZ) 
+                    tr.position = new Vector3(originalPos.x, tr.position.y, tr.position.z);
+
+                if (lockedAxis == ShakeLockType.Y || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.YZ) 
+                    tr.position = new Vector3(tr.position.x, originalPos.y, tr.position.z);
+
+                if (lockedAxis == ShakeLockType.Z || lockedAxis == ShakeLockType.YZ || lockedAxis == ShakeLockType.XZ) 
+                    tr.position = new Vector3(tr.position.x, tr.position.y, originalPos.z);
 
                 await Task.Yield();
             }
@@ -68,54 +101,78 @@ namespace Utilities
 
 
 
-        // Shake position with rect transform
-        private static Dictionary<RectTransform, Task> currentRectShakePositions = new();
-        public static void UShakePosition(this RectTransform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        public static void UStopShakePosition(this RectTransform tr)
         {
             if (currentRectShakePositions.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
-
-                currentRectShakePositions[tr] = UShakePositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
-            }
-            else
-            {
-                currentRectShakePositions.Add(tr, UShakePositionAsync(tr, duration, intensity, lockX, lockY, lockZ));
+                rectTrShakePositionsToStop.Add(tr);
+                currentRectShakePositions.Remove(tr);
             }
         }
 
-        private static async Task UShakePositionAsync(RectTransform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        private static List<RectTransform> rectTrShakePositionsToStop = new List<RectTransform>();
+        private static Dictionary<RectTransform, Task> currentRectShakePositions = new();
+        public static void UShakePosition(this RectTransform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        {
+            if (currentRectShakePositions.Keys.Contains(tr))
+            {
+                rectTrShakePositionsToStop.Add(tr);
+
+                currentRectShakePositions[tr] = UShakePositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime);
+            }
+            else
+            {
+                currentRectShakePositions.Add(tr, UShakePositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime));
+            }
+        }
+
+        private static async Task UShakePositionAsync(RectTransform tr, float duration, float intensity, float vibrato, ShakeLockType lockedAxis, bool unscaledTime)
         {
             float timer = 0;
             float startIntensity = intensity;
             Vector3 originalPos = tr.position;
 
+            float stepTimer = 0;
+            Vector3 previousPos = tr.position;
+            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rectTrShakePositionsToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rectTrShakePositionsToStop.Remove(tr);
 
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+                stepTimer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                if (stepTimer > vibrato)
+                {
+                    stepTimer = 0;
+                    previousPos = currentWantedPos;
+                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
-                tr.position = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                tr.position = Vector3.Lerp(previousPos, currentWantedPos, stepTimer / vibrato);
 
-                if (lockX) tr.position = new Vector3(originalPos.x, tr.position.y, tr.position.z);
-                if (lockY) tr.position = new Vector3(tr.position.x, originalPos.y, tr.position.z);
-                if (lockZ) tr.position = new Vector3(tr.position.x, tr.position.y, originalPos.z);
+                if (lockedAxis == ShakeLockType.X || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.XZ)
+                    tr.position = new Vector3(originalPos.x, tr.position.y, tr.position.z);
+
+                if (lockedAxis == ShakeLockType.Y || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.YZ)
+                    tr.position = new Vector3(tr.position.x, originalPos.y, tr.position.z);
+
+                if (lockedAxis == ShakeLockType.Z || lockedAxis == ShakeLockType.YZ || lockedAxis == ShakeLockType.XZ)
+                    tr.position = new Vector3(tr.position.x, tr.position.y, originalPos.z);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.position = originalPos;
-
-            await Task.Yield();
-
             currentRectShakePositions.Remove(tr);
         }
 
@@ -124,7 +181,16 @@ namespace Utilities
 
         #region Position
 
-        // Change position
+        public static void UStopChangePosition(this Transform tr)
+        {
+            if (currentChangedPos.Keys.Contains(tr))
+            {
+                trPositionsToStop.Add(tr);
+                currentChangedPos.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trPositionsToStop = new List<Transform>();
         private static Dictionary<Transform, Task> currentChangedPos = new();
         public static void UChangePosition(this Transform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -136,8 +202,8 @@ namespace Utilities
 
             if (currentChangedPos.Keys.Contains(tr))
             {
-                if(!positionsToStop.Contains(tr))
-                    positionsToStop.Add(tr);
+                if(!trPositionsToStop.Contains(tr))
+                    trPositionsToStop.Add(tr);
 
                 currentChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
@@ -155,9 +221,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (positionsToStop.Contains(tr) && timer != 0)
+                if (trPositionsToStop.Contains(tr) && timer != 0)
                 {
-                    positionsToStop.Remove(tr);
+                    trPositionsToStop.Remove(tr);
 
                     return;
                 }
@@ -175,8 +241,16 @@ namespace Utilities
         }
 
 
+        public static void UStopChangePosition(this RectTransform tr)
+        {
+            if (currentRectChangedPos.Keys.Contains(tr))
+            {
+                rectTrPositionsToStop.Add(tr);
+                currentRectChangedPos.Remove(tr);
+            }
+        }
 
-        // Change position with rect transform
+        private static List<RectTransform> rectTrPositionsToStop = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectChangedPos = new();
         public static void UChangePosition(this RectTransform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -188,8 +262,8 @@ namespace Utilities
 
             if (currentRectChangedPos.Keys.Contains(tr))
             {
-                if (!positionsToStop.Contains(tr))
-                    positionsToStop.Add(tr);
+                if (!rectTrPositionsToStop.Contains(tr))
+                    rectTrPositionsToStop.Add(tr);
 
                 currentRectChangedPos[tr] = UChangePositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
@@ -207,9 +281,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (positionsToStop.Contains(tr) && timer != 0)
+                if (rectTrPositionsToStop.Contains(tr) && timer != 0)
                 {
-                    positionsToStop.Remove(tr);
+                    rectTrPositionsToStop.Remove(tr);
 
                     return;
                 }
@@ -231,7 +305,16 @@ namespace Utilities
 
         #region Rotation
 
-        // Change rotation
+        public static void UStopChangeRotation(this Transform tr)
+        {
+            if (currentChangedRot.Keys.Contains(tr))
+            {
+                trRotationsToStop.Add(tr);
+                currentChangedRot.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trRotationsToStop = new List<Transform>();
         private static Dictionary<Transform, Task> currentChangedRot = new();
         public static void UChangeRotation(this Transform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -243,8 +326,8 @@ namespace Utilities
 
             if (currentChangedRot.Keys.Contains(tr))
             {
-                if (!rotationsToStop.Contains(tr))
-                    rotationsToStop.Add(tr);
+                if (!trRotationsToStop.Contains(tr))
+                    trRotationsToStop.Add(tr);
 
                 currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
@@ -262,9 +345,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (rotationsToStop.Contains(tr) && timer != 0)
+                if (trRotationsToStop.Contains(tr) && timer != 0)
                 {
-                    rotationsToStop.Remove(tr);
+                    trRotationsToStop.Remove(tr);
 
                     return;
                 }
@@ -283,7 +366,16 @@ namespace Utilities
 
 
 
-        // Change rotation with rect transform
+        public static void UStopChangeRotation(this RectTransform tr)
+        {
+            if (currentRectChangedRot.Keys.Contains(tr))
+            {
+                rectTrRotationsToStop.Add(tr);
+                currentRectChangedRot.Remove(tr);
+            }
+        }
+
+        private static List<RectTransform> rectTrRotationsToStop = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectChangedRot = new();
         public static void UChangeRotation(this RectTransform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -295,8 +387,8 @@ namespace Utilities
 
             if (currentRectChangedRot.Keys.Contains(tr))
             {
-                if (!rotationsToStop.Contains(tr))
-                    rotationsToStop.Add(tr);
+                if (!rectTrRotationsToStop.Contains(tr))
+                    rectTrRotationsToStop.Add(tr);
 
                 currentRectChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
@@ -314,9 +406,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (rotationsToStop.Contains(tr) && timer != 0)
+                if (rectTrRotationsToStop.Contains(tr) && timer != 0)
                 {
-                    rotationsToStop.Remove(tr);
+                    rectTrRotationsToStop.Remove(tr);
 
                     return;
                 }
@@ -338,7 +430,16 @@ namespace Utilities
 
         #region Scale
 
-        // Change scale
+        public static void UStopChangeScale(this Transform tr)
+        {
+            if (currentChangedScale.Keys.Contains(tr))
+            {
+                trScalesToStop.Add(tr);
+                currentChangedScale.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trScalesToStop = new List<Transform>();
         private static Dictionary<Transform, Task> currentChangedScale = new();
         public static void UChangeScale(this Transform tr, float duration, Vector3 newSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -350,8 +451,8 @@ namespace Utilities
 
             if (currentChangedScale.Keys.Contains(tr))
             {
-                if(!scalesToStop.Contains(tr))
-                    scalesToStop.Add(tr);
+                if(!trScalesToStop.Contains(tr))
+                    trScalesToStop.Add(tr);
 
                 currentChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, curve, unscaledTime);
             }
@@ -369,9 +470,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (scalesToStop.Contains(tr) && timer != 0)
+                if (trScalesToStop.Contains(tr) && timer != 0)
                 {
-                    scalesToStop.Remove(tr);
+                    trScalesToStop.Remove(tr);
 
                     return;
                 }
@@ -389,7 +490,16 @@ namespace Utilities
         }
 
 
+        public static void UStopChangeScale(this RectTransform tr)
+        {
+            if (currentRectChangedScale.Keys.Contains(tr))
+            {
+                rectTrScalesToStop.Add(tr);
+                currentRectChangedScale.Remove(tr);
+            }
+        }
 
+        private static List<RectTransform> rectTrScalesToStop = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectChangedScale = new();
         public static void UChangeScale(this RectTransform tr, float duration, Vector3 newSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -401,8 +511,8 @@ namespace Utilities
 
             if (currentRectChangedScale.Keys.Contains(tr))
             {
-                if (!scalesToStop.Contains(tr))
-                    scalesToStop.Add(tr);
+                if (!rectTrScalesToStop.Contains(tr))
+                    rectTrScalesToStop.Add(tr);
 
                 currentRectChangedScale[tr] = UChangeScaleAsync(tr, duration, newSize, curve, unscaledTime);
             }
@@ -420,9 +530,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (scalesToStop.Contains(tr) && timer != 0)
+                if (rectTrScalesToStop.Contains(tr) && timer != 0)
                 {
-                    scalesToStop.Remove(tr);
+                    rectTrScalesToStop.Remove(tr);
 
                     return;
                 }
@@ -444,18 +554,28 @@ namespace Utilities
 
         #region Bounce Scale
 
-        // Bounce
+        public static void UStopBounceScale(this Transform tr)
+        {
+            if (currentBouncesScales.Keys.Contains(tr))
+            {
+                trBouceScaleToStop.Add(tr);
+                currentBouncesScales.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trBouceScaleToStop = new List<Transform>();
+        private static Dictionary<Transform, Task> currentBouncesScales = new();
         public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
-            if (currentChangedScale.Keys.Contains(tr))
+            if (currentBouncesScales.Keys.Contains(tr))
             {
-                scalesToStop.Add(tr);
+                trBouceScaleToStop.Add(tr);
 
-                currentChangedScale[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
+                currentBouncesScales[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
             }
             else
             {
-                currentChangedScale.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
+                currentBouncesScales.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
             }
         }
 
@@ -467,9 +587,9 @@ namespace Utilities
             while (timer < duration1)
             {
                 if (!Application.isPlaying) return;
-                if (scalesToStop.Contains(tr) && timer != 0)
+                if (trBouceScaleToStop.Contains(tr) && timer != 0)
                 {
-                    scalesToStop.Remove(tr);
+                    trBouceScaleToStop.Remove(tr);
 
                     return;
                 }
@@ -488,9 +608,9 @@ namespace Utilities
             while (timer < duration2)
             {
                 if (!Application.isPlaying) return;
-                if (scalesToStop.Contains(tr) && timer != 0)
+                if (trBouceScaleToStop.Contains(tr) && timer != 0)
                 {
-                    scalesToStop.Remove(tr);
+                    trBouceScaleToStop.Remove(tr);
 
                     return;
                 }
@@ -504,24 +624,32 @@ namespace Utilities
 
             if (!Application.isPlaying) return;
             tr.localScale = endSize;
-            currentChangedScale.Remove(tr);
+            currentBouncesScales.Remove(tr);
         }
 
 
+        public static void UStopBounceScale(this RectTransform tr)
+        {
+            if (currentBouncedScalesRectTr.Keys.Contains(tr))
+            {
+                rectTrBouceScaleToStop.Add(tr);
+                currentBouncedScalesRectTr.Remove(tr);
+            }
+        }
 
-        // Change rotation with rect transform
-        private static Dictionary<Transform, Task> currentBouncedRectTr = new();
+        private static List<RectTransform> rectTrBouceScaleToStop = new List<RectTransform>();
+        private static Dictionary<RectTransform, Task> currentBouncedScalesRectTr = new();
         public static void UBounce(this RectTransform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
-            if (currentBouncedRectTr.Keys.Contains(tr))
+            if (currentBouncedScalesRectTr.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                rectTrBouceScaleToStop.Add(tr);
 
-                currentBouncedRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
+                currentBouncedScalesRectTr[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
             }
             else
             {
-                currentBouncedRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
+                currentBouncedScalesRectTr.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
             }
         }
 
@@ -533,9 +661,9 @@ namespace Utilities
             while (timer < duration1)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rectTrBouceScaleToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rectTrBouceScaleToStop.Remove(tr);
 
                     return;
                 }
@@ -554,9 +682,9 @@ namespace Utilities
             while (timer < duration2)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rectTrBouceScaleToStop.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rectTrBouceScaleToStop.Remove(tr);
 
                     return;
                 }
@@ -570,10 +698,11 @@ namespace Utilities
 
             if (!Application.isPlaying) return;
             tr.localScale = endSize;
-            currentBouncedRectTr.Remove(tr);
+            currentBouncedScalesRectTr.Remove(tr);
         }
 
         #endregion
+
 
 
         /// ---------------- LOCAL VERSIONS --------------------
@@ -581,106 +710,156 @@ namespace Utilities
 
         #region Shake Local
 
-        // Shake position
-        private static Dictionary<Transform, Task> currentShakePositionsLocal = new();
-        public static void UShakeLocalPosition(this Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        public static void UStopLocalShakePosition(this Transform tr)
         {
-            if (currentShakePositionsLocal.Keys.Contains(tr))
+            if (currentLocalShakePositions.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
-
-                currentShakePositionsLocal[tr] = UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
-            }
-            else
-            {
-                currentShakePositionsLocal.Add(tr, UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ));
+                trShakePositionsToStopLocal.Add(tr);
+                currentLocalShakePositions.Remove(tr);
             }
         }
 
-        private static async Task UShakeLocalPositionAsync(Transform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        private static List<Transform> trShakePositionsToStopLocal = new List<Transform>();
+        private static Dictionary<Transform, Task> currentLocalShakePositions = new();
+        public static void UShakeLocalPosition(this Transform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        {
+            if (currentLocalShakePositions.Keys.Contains(tr))
+            {
+                trShakePositionsToStopLocal.Add(tr);
+
+                currentLocalShakePositions[tr] = UShakeLocalPositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime);
+            }
+            else
+            {
+                currentLocalShakePositions.Add(tr, UShakeLocalPositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime));
+            }
+        }
+
+        private static async Task UShakeLocalPositionAsync(Transform tr, float duration, float intensity, float vibrato, ShakeLockType lockedAxis, bool unscaledTime)
         {
             float timer = 0;
             float startIntensity = intensity;
             Vector3 originalPos = tr.localPosition;
 
+            float stepTimer = 0;
+            Vector3 previousPos = tr.localPosition;
+            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (trShakePositionsToStopLocal.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    trShakePositionsToStopLocal.Remove(tr);
 
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+                stepTimer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                if (stepTimer > vibrato)
+                {
+                    stepTimer = 0;
+                    previousPos = currentWantedPos;
+                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
-                tr.localPosition = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                tr.localPosition = Vector3.Lerp(previousPos, currentWantedPos, stepTimer / vibrato);
 
-                if (lockX) tr.localPosition = new Vector3(originalPos.x, tr.localPosition.y, tr.localPosition.z);
-                if (lockY) tr.localPosition = new Vector3(tr.localPosition.x, originalPos.y, tr.localPosition.z);
-                if (lockZ) tr.localPosition = new Vector3(tr.localPosition.x, tr.localPosition.y, originalPos.z);
+                if (lockedAxis == ShakeLockType.X || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.XZ)
+                    tr.localPosition = new Vector3(originalPos.x, tr.localPosition.y, tr.localPosition.z);
+
+                if (lockedAxis == ShakeLockType.Y || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.YZ)
+                    tr.localPosition = new Vector3(tr.localPosition.x, originalPos.y, tr.localPosition.z);
+
+                if (lockedAxis == ShakeLockType.Z || lockedAxis == ShakeLockType.YZ || lockedAxis == ShakeLockType.XZ)
+                    tr.localPosition = new Vector3(tr.localPosition.x, tr.localPosition.y, originalPos.z);
 
                 await Task.Yield();
             }
 
             if (!Application.isPlaying) return;
             tr.localPosition = originalPos;
-            currentShakePositionsLocal.Remove(tr);
+            currentLocalShakePositions.Remove(tr);
         }
 
 
 
-        // Shake position with rect transform
-        private static Dictionary<RectTransform, Task> currentRectShakePositionsLocal = new();
-        public static void UShakeLocalPosition(this RectTransform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        public static void UStopLocalShakePosition(this RectTransform tr)
         {
-            if (currentRectShakePositionsLocal.Keys.Contains(tr))
+            if (currentRectLocalShakePositions.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                rectTrShakePositionsToStopLocal.Add(tr);
+                currentRectLocalShakePositions.Remove(tr);
+            }
+        }
 
-                currentRectShakePositionsLocal[tr] = UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ);
+        private static List<RectTransform> rectTrShakePositionsToStopLocal = new List<RectTransform>();
+        private static Dictionary<RectTransform, Task> currentRectLocalShakePositions = new();
+        public static void UShakeLocalPosition(this RectTransform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        {
+            if (currentRectLocalShakePositions.Keys.Contains(tr))
+            {
+                rectTrShakePositionsToStopLocal.Add(tr);
+
+                currentRectLocalShakePositions[tr] = UShakeLocalPositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime);
             }
             else
             {
-                currentRectShakePositionsLocal.Add(tr, UShakeLocalPositionAsync(tr, duration, intensity, lockX, lockY, lockZ));
+                currentRectLocalShakePositions.Add(tr, UShakeLocalPositionAsync(tr, duration, intensity, vibrato, lockedAxis, unscaledTime));
             }
         }
 
-        private static async Task UShakeLocalPositionAsync(RectTransform tr, float duration, float intensity, bool lockX = false, bool lockY = false, bool lockZ = false)
+        private static async Task UShakeLocalPositionAsync(RectTransform tr, float duration, float intensity, float vibrato, ShakeLockType lockedAxis, bool unscaledTime)
         {
             float timer = 0;
             float startIntensity = intensity;
             Vector3 originalPos = tr.localPosition;
 
+            float stepTimer = 0;
+            Vector3 previousPos = tr.localPosition;
+            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rectTrShakePositionsToStopLocal.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rectTrShakePositionsToStopLocal.Remove(tr);
 
                     return;
                 }
 
-                timer += Time.unscaledDeltaTime;
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+                stepTimer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                if (stepTimer > vibrato)
+                {
+                    stepTimer = 0;
+                    previousPos = currentWantedPos;
+                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
-                tr.localPosition = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                tr.localPosition = Vector3.Lerp(previousPos, currentWantedPos, stepTimer / vibrato);
 
-                if (lockX) tr.localPosition = new Vector3(originalPos.x, tr.localPosition.y, tr.localPosition.z);
-                if (lockY) tr.localPosition = new Vector3(tr.localPosition.x, originalPos.y, tr.localPosition.z);
-                if (lockZ) tr.localPosition = new Vector3(tr.localPosition.x, tr.localPosition.y, originalPos.z);
+                if (lockedAxis == ShakeLockType.X || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.XZ)
+                    tr.localPosition = new Vector3(originalPos.x, tr.localPosition.y, tr.localPosition.z);
+
+                if (lockedAxis == ShakeLockType.Y || lockedAxis == ShakeLockType.XY || lockedAxis == ShakeLockType.YZ)
+                    tr.localPosition = new Vector3(tr.localPosition.x, originalPos.y, tr.localPosition.z);
+
+                if (lockedAxis == ShakeLockType.Z || lockedAxis == ShakeLockType.YZ || lockedAxis == ShakeLockType.XZ)
+                    tr.localPosition = new Vector3(tr.localPosition.x, tr.localPosition.y, originalPos.z);
 
                 await Task.Yield();
             }
 
+            if (!Application.isPlaying) return;
             tr.localPosition = originalPos;
-
-            await Task.Yield();
-
-            currentRectShakePositionsLocal.Remove(tr);
+            currentRectLocalShakePositions.Remove(tr);
         }
 
         #endregion
@@ -688,7 +867,16 @@ namespace Utilities
 
         #region Position Local
 
-        // Change position
+        public static void UStopChangePositionLocal(this Transform tr)
+        {
+            if (currentChangedPosLocal.Keys.Contains(tr))
+            {
+                trPositionsToStopLocal.Add(tr);
+                currentChangedPosLocal.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trPositionsToStopLocal = new List<Transform>();
         private static Dictionary<Transform, Task> currentChangedPosLocal = new();
         public static void UChangeLocalPosition(this Transform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -700,7 +888,7 @@ namespace Utilities
 
             if (currentChangedPosLocal.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                trPositionsToStopLocal.Add(tr);
 
                 currentChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
@@ -718,9 +906,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (trPositionsToStopLocal.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    trPositionsToStopLocal.Remove(tr);
 
                     return;
                 }
@@ -739,7 +927,16 @@ namespace Utilities
 
 
 
-        // Change position with rect transform
+        public static void UStopChangePositionLocal(this RectTransform tr)
+        {
+            if (currentRectChangedPosLocal.Keys.Contains(tr))
+            {
+                rectTrPositionsToStopLocal.Add(tr);
+                currentRectChangedPosLocal.Remove(tr);
+            }
+        }
+
+        private static List<RectTransform> rectTrPositionsToStopLocal = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectChangedPosLocal = new();
         public static void UChangeLocalPosition(this RectTransform tr, float duration, Vector3 newPos, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -751,7 +948,7 @@ namespace Utilities
 
             if (currentRectChangedPosLocal.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                rectTrPositionsToStopLocal.Add(tr);
 
                 currentRectChangedPosLocal[tr] = UChangeLocalPositionAsync(tr, duration, newPos, curve, unscaledTime);
             }
@@ -769,9 +966,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rectTrPositionsToStopLocal.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rectTrPositionsToStopLocal.Remove(tr);
 
                     return;
                 }
@@ -793,7 +990,16 @@ namespace Utilities
 
         #region Rotation Local
 
-        // Change rotation
+        public static void UStopChangeLocalRotation(this Transform tr)
+        {
+            if (currentChangedRotLocal.Keys.Contains(tr))
+            {
+                trRotationsToStopLocal.Add(tr);
+                currentChangedRotLocal.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trRotationsToStopLocal = new List<Transform>();
         private static Dictionary<Transform, Task> currentChangedRotLocal = new();
         public static void UChangeLocalRotation(this Transform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -805,7 +1011,7 @@ namespace Utilities
 
             if (currentChangedRotLocal.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                trRotationsToStopLocal.Add(tr);
 
                 currentChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
@@ -823,9 +1029,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (trRotationsToStopLocal.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    trRotationsToStopLocal.Remove(tr);
 
                     return;
                 }
@@ -843,8 +1049,16 @@ namespace Utilities
         }
 
 
+        public static void UStopChangeLocalRotation(this RectTransform tr)
+        {
+            if (currentRectChangedRotLocal.Keys.Contains(tr))
+            {
+                rectTrRotationsToStopLocal.Add(tr);
+                currentRectChangedRotLocal.Remove(tr);
+            }
+        }
 
-        // Change rotation with rect transform
+        private static List<RectTransform> rectTrRotationsToStopLocal = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectChangedRotLocal = new();
         public static void UChangeLocalRotation(this RectTransform tr, float duration, Quaternion newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
         {
@@ -856,7 +1070,7 @@ namespace Utilities
 
             if (currentRectChangedRotLocal.Keys.Contains(tr))
             {
-                transformToStop.Add(tr);
+                rectTrRotationsToStopLocal.Add(tr);
 
                 currentRectChangedRotLocal[tr] = UChangeLocalRotationAsync(tr, duration, newRot, curve, unscaledTime);
             }
@@ -874,9 +1088,9 @@ namespace Utilities
             while (timer < duration)
             {
                 if (!Application.isPlaying) return;
-                if (transformToStop.Contains(tr) && timer != 0)
+                if (rectTrRotationsToStopLocal.Contains(tr) && timer != 0)
                 {
-                    transformToStop.Remove(tr);
+                    rectTrRotationsToStopLocal.Remove(tr);
 
                     return;
                 }
