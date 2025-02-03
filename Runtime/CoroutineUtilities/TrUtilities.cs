@@ -363,6 +363,54 @@ namespace Utilities
             tr.rotation = newRot;
             currentChangedRot.Remove(tr);
         }
+        
+        public static void UChangeRotation(this Transform tr, float duration, Vector3 newRot, CurveType curve = CurveType.None, bool unscaledTime = false)
+        {
+            if(duration == 0)
+            {
+                tr.rotation = Quaternion.Euler(newRot);
+                return;
+            }
+
+            if (currentChangedRot.Keys.Contains(tr))
+            {
+                if (!trRotationsToStop.Contains(tr))
+                    trRotationsToStop.Add(tr);
+
+                currentChangedRot[tr] = UChangeRotationAsync(tr, duration, newRot, curve, unscaledTime);
+            }
+            else
+            {
+                currentChangedRot.Add(tr, UChangeRotationAsync(tr, duration, newRot, curve,unscaledTime));
+            }
+        }
+
+        private static async Task UChangeRotationAsync(Transform tr, float duration, Vector3 newRot, CurveType curve, bool unscaledTime)
+        {
+            float timer = 0;
+            Vector3 originalRot = tr.eulerAngles;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (trRotationsToStop.Contains(tr) && timer != 0)
+                {
+                    trRotationsToStop.Remove(tr);
+
+                    return;
+                }
+
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                tr.rotation = Quaternion.Euler(Vector3.Lerp(originalRot, newRot, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration)));
+
+                await Task.Yield();
+            }
+
+            if (!Application.isPlaying) return;
+            tr.rotation = Quaternion.Euler(newRot);
+            currentChangedRot.Remove(tr);
+        }
 
 
 
