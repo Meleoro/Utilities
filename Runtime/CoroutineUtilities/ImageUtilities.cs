@@ -167,7 +167,9 @@ namespace Utilities
 
         private static async Task UBounceImageColorAsync(Image image, float duration1, Color endColor1, float duration2, Color endColor2, CurveType curve, bool loop, bool unscaledTime)
         {
-            while (loop)
+            bool firstIteration = true;
+            
+            while (loop || firstIteration)
             {
                 float timer = 0;
                 Color originalColor = image.color;
@@ -213,6 +215,8 @@ namespace Utilities
 
                 if (!Application.isPlaying) return;
                 image.color = endColor2;
+
+                firstIteration = false;
             }
 
             currentBouncedColors.Remove(image);

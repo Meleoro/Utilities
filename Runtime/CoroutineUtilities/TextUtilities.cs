@@ -164,7 +164,9 @@ namespace Utilities
 
         private static async Task UBounceTextColorAsync(TextMeshProUGUI text, float duration1, Color finalColor1, float duration2, Color finalColor2, bool loop, CurveType curve, bool unscaledTime)
         {
-            while (loop)
+            bool firstIteration = true;
+            
+            while (loop || firstIteration)
             {
                 float timer = 0;
                 Color originalColor = text.color;
@@ -208,9 +210,10 @@ namespace Utilities
 
                 if (!Application.isPlaying) return;
                 text.color = finalColor2;
+
+                firstIteration = false;
             }
-
-
+            
             currentBouncedTextColors.Remove(text);
         }
 

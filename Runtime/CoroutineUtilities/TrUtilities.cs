@@ -630,7 +630,9 @@ namespace Utilities
 
         private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve, bool loop, bool unscaledTime)
         {
-            while (loop)
+            bool firstIteration = true;
+            
+            while (loop || firstIteration)
             {
                 float timer = 0;
                 Vector3 originalScale = tr.localScale;
@@ -675,6 +677,8 @@ namespace Utilities
 
                 if (!Application.isPlaying) return;
                 tr.localScale = endSize;
+
+                firstIteration = false;
             }
             
             currentBouncesScales.Remove(tr);
