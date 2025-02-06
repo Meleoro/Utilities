@@ -613,65 +613,70 @@ namespace Utilities
 
         private static List<Transform> trBouceScaleToStop = new List<Transform>();
         private static Dictionary<Transform, Task> currentBouncesScales = new();
-        public static void UBounce(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve = CurveType.None, bool unscaledTime = false)
+        public static void UBounceScale(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, 
+            CurveType curve = CurveType.None, bool loop = false, bool unscaledTime = false)
         {
             if (currentBouncesScales.Keys.Contains(tr))
             {
                 trBouceScaleToStop.Add(tr);
 
-                currentBouncesScales[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime);
+                currentBouncesScales[tr] = UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, loop, unscaledTime);
             }
             else
             {
-                currentBouncesScales.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, unscaledTime));
+                currentBouncesScales.Add(tr, UBounceAsync(tr, duration1, bounceSize, duration2, endSize, curve, loop, unscaledTime));
             }
         }
 
-        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve, bool unscaledTime)
+        private static async Task UBounceAsync(this Transform tr, float duration1, Vector3 bounceSize, float duration2, Vector3 endSize, CurveType curve, bool loop, bool unscaledTime)
         {
-            float timer = 0;
-            Vector3 originalScale = tr.localScale;
-
-            while (timer < duration1)
+            while (loop)
             {
-                if (!Application.isPlaying) return;
-                if (trBouceScaleToStop.Contains(tr) && timer != 0)
-                {
-                    trBouceScaleToStop.Remove(tr);
+                float timer = 0;
+                Vector3 originalScale = tr.localScale;
 
-                    return;
+                while (timer < duration1)
+                {
+                    if (!Application.isPlaying) return;
+                    if (trBouceScaleToStop.Contains(tr) && timer != 0)
+                    {
+                        trBouceScaleToStop.Remove(tr);
+
+                        return;
+                    }
+
+                    timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                    tr.localScale = Vector3.Lerp(originalScale, bounceSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration1));
+
+                    await Task.Yield();
                 }
 
-                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-
-                tr.localScale = Vector3.Lerp(originalScale, bounceSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration1));
-
-                await Task.Yield();
-            }
-
-            if (!Application.isPlaying) return;
-            tr.localScale = bounceSize;
-            timer = 0;
-
-            while (timer < duration2)
-            {
                 if (!Application.isPlaying) return;
-                if (trBouceScaleToStop.Contains(tr) && timer != 0)
-                {
-                    trBouceScaleToStop.Remove(tr);
+                tr.localScale = bounceSize;
+                timer = 0;
 
-                    return;
+                while (timer < duration2)
+                {
+                    if (!Application.isPlaying) return;
+                    if (trBouceScaleToStop.Contains(tr) && timer != 0)
+                    {
+                        trBouceScaleToStop.Remove(tr);
+
+                        return;
+                    }
+
+                    timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                    tr.localScale = Vector3.Lerp(bounceSize, endSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
+
+                    await Task.Yield();
                 }
 
-                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-
-                tr.localScale = Vector3.Lerp(bounceSize, endSize, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
-
-                await Task.Yield();
+                if (!Application.isPlaying) return;
+                tr.localScale = endSize;
             }
-
-            if (!Application.isPlaying) return;
-            tr.localScale = endSize;
+            
             currentBouncesScales.Remove(tr);
         }
 
@@ -751,6 +756,85 @@ namespace Utilities
 
         #endregion
 
+
+        #region Squish Effect
+
+         public static void UStopSquish(this Transform tr)
+        {
+            if (currentSquishedTr.Keys.Contains(tr))
+            {
+                trSquishToStop.Add(tr);
+                currentSquishedTr.Remove(tr);
+            }
+        }
+
+        private static List<Transform> trSquishToStop = new List<Transform>();
+        private static Dictionary<Transform, Task> currentSquishedTr = new();
+        public static void USquishEffect(this Transform tr, float duration, float strength, bool is2D = false, CurveType curve = CurveType.None, bool unscaledTime = false)
+        {
+            if(duration == 0)
+            {
+                return;
+            }
+
+            if (currentSquishedTr.Keys.Contains(tr))
+            {
+                if(!trSquishToStop.Contains(tr))
+                    trSquishToStop.Add(tr);
+
+                currentSquishedTr[tr] = USquishEffectCoroutine(tr, duration, strength, is2D, curve, unscaledTime);
+            }
+            else
+            {
+                currentSquishedTr.Add(tr, USquishEffectCoroutine(tr, duration, strength, is2D, curve, unscaledTime));
+            }
+        }
+
+        private static async Task USquishEffectCoroutine(Transform tr, float duration, float strength, bool is2D, CurveType curve, bool unscaledTime)
+        {
+            float timer = 0;
+            Vector3 originalScale = tr.localScale;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (trSquishToStop.Contains(tr) && timer != 0)
+                {
+                    trSquishToStop.Remove(tr);
+                    tr.localScale = originalScale;
+                    return;
+                }
+
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                Vector3 finalScale = originalScale;
+
+                if (is2D)
+                {
+                    finalScale.x = Mathf.Lerp(originalScale.x, originalScale.x + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f)));
+                    finalScale.y = Mathf.Lerp(originalScale.y, originalScale.y + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f - 1)));
+                    finalScale.z = originalScale.z;
+                }
+                else
+                {
+                    finalScale.x = Mathf.Lerp(originalScale.x, originalScale.x + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f)));
+                    finalScale.y = Mathf.Lerp(originalScale.y, originalScale.y + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f)));
+                    finalScale.z = Mathf.Lerp(originalScale.z, originalScale.z + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f - 1)));
+                }
+                
+                tr.localScale = finalScale;
+
+                await Task.Yield();
+            }
+
+            tr.localScale = originalScale;
+            
+            if (!Application.isPlaying) return;
+            currentSquishedTr.Remove(tr);
+        }
+
+
+        #endregion
 
 
         /// ---------------- LOCAL VERSIONS --------------------

@@ -206,7 +206,7 @@ namespace Utilities
 
                     timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
-                    image.color = Color.Lerp(originalColor, endColor2, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
+                    image.color = Color.Lerp(endColor1, endColor2, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration2));
 
                     await Task.Yield();
                 }
