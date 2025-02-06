@@ -822,8 +822,8 @@ namespace Utilities
                 else
                 {
                     finalScale.x = Mathf.Lerp(originalScale.x, originalScale.x + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f)));
-                    finalScale.y = Mathf.Lerp(originalScale.y, originalScale.y + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f)));
-                    finalScale.z = Mathf.Lerp(originalScale.z, originalScale.z + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f - 1)));
+                    finalScale.y = Mathf.Lerp(originalScale.y, originalScale.y + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f - 1)));
+                    finalScale.z = Mathf.Lerp(originalScale.z, originalScale.z + strength, UtilitiesCurves.AdaptToWantedCurve(curve, Mathf.Sin((timer / duration) * 3f)));
                 }
                 
                 tr.localScale = finalScale;
