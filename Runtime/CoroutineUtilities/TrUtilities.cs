@@ -134,7 +134,7 @@ namespace Utilities
 
             float stepTimer = 0;
             Vector3 previousPos = tr.position;
-            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+            Vector3 currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
 
             while (timer < duration)
             {
@@ -153,7 +153,7 @@ namespace Utilities
                 {
                     stepTimer = 0;
                     previousPos = currentWantedPos;
-                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                    currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
                 }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
@@ -879,7 +879,7 @@ namespace Utilities
 
             float stepTimer = 0;
             Vector3 previousPos = tr.localPosition;
-            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+            Vector3 currentWantedPos = tr.localPosition + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
 
             while (timer < duration)
             {
@@ -898,7 +898,7 @@ namespace Utilities
                 {
                     stepTimer = 0;
                     previousPos = currentWantedPos;
-                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                    currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
                 }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
