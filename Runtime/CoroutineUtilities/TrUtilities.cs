@@ -35,7 +35,7 @@ namespace Utilities
 
         private static List<Transform> trShakePositionsToStop = new List<Transform>();
         private static Dictionary<Transform, Task> currentShakePositions = new();
-        public static void UShakePosition(this Transform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        public static void UShakePosition(this Transform tr, float duration, float intensity, float vibrato = 0.05f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
         {
             if (currentShakePositions.Keys.Contains(tr))
             {
@@ -57,7 +57,7 @@ namespace Utilities
 
             float stepTimer = 0;
             Vector3 previousPos = tr.position;
-            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+            Vector3 currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
 
             while (timer < duration)
             {
@@ -76,7 +76,7 @@ namespace Utilities
                 {
                     stepTimer = 0;
                     previousPos = currentWantedPos;
-                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                    currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
                 }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
@@ -112,7 +112,7 @@ namespace Utilities
 
         private static List<RectTransform> rectTrShakePositionsToStop = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectShakePositions = new();
-        public static void UShakePosition(this RectTransform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        public static void UShakePosition(this RectTransform tr, float duration, float intensity, float vibrato = 0.05f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
         {
             if (currentRectShakePositions.Keys.Contains(tr))
             {
@@ -857,7 +857,7 @@ namespace Utilities
 
         private static List<Transform> trShakePositionsToStopLocal = new List<Transform>();
         private static Dictionary<Transform, Task> currentLocalShakePositions = new();
-        public static void UShakeLocalPosition(this Transform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        public static void UShakeLocalPosition(this Transform tr, float duration, float intensity, float vibrato = 0.05f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
         {
             if (currentLocalShakePositions.Keys.Contains(tr))
             {
@@ -879,7 +879,7 @@ namespace Utilities
 
             float stepTimer = 0;
             Vector3 previousPos = tr.localPosition;
-            Vector3 currentWantedPos = tr.localPosition + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+            Vector3 currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
 
             while (timer < duration)
             {
@@ -934,7 +934,7 @@ namespace Utilities
 
         private static List<RectTransform> rectTrShakePositionsToStopLocal = new List<RectTransform>();
         private static Dictionary<RectTransform, Task> currentRectLocalShakePositions = new();
-        public static void UShakeLocalPosition(this RectTransform tr, float duration, float intensity, float vibrato = 0.1f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
+        public static void UShakeLocalPosition(this RectTransform tr, float duration, float intensity, float vibrato = 0.05f, ShakeLockType lockedAxis = ShakeLockType.None, bool unscaledTime = false)
         {
             if (currentRectLocalShakePositions.Keys.Contains(tr))
             {
@@ -956,7 +956,7 @@ namespace Utilities
 
             float stepTimer = 0;
             Vector3 previousPos = tr.localPosition;
-            Vector3 currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+            Vector3 currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
 
             while (timer < duration)
             {
@@ -975,7 +975,7 @@ namespace Utilities
                 {
                     stepTimer = 0;
                     previousPos = currentWantedPos;
-                    currentWantedPos = new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
+                    currentWantedPos = originalPos + new Vector3(Random.Range(-intensity, intensity), Random.Range(-intensity, intensity), Random.Range(-intensity, intensity));
                 }
 
                 intensity = Mathf.Lerp(startIntensity, 0, timer / duration);
