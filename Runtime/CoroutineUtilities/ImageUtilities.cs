@@ -74,6 +74,69 @@ namespace Utilities
         #endregion
 
 
+        #region Lerp Fill Amount
+
+        public static void UStopLerpFillAmount(this Image image)
+        {
+            if (currentLerpedFillAmounts.Keys.Contains(image))
+            {
+                lerpedFillAmountsToStop.Add(image);
+                currentLerpedFillAmounts.Remove(image);
+            }
+        }
+
+        private static List<Image> lerpedFillAmountsToStop = new List<Image>();
+        private static Dictionary<Image, Task> currentLerpedFillAmounts = new();
+        public static void ULerpFillAmount(this Image image, float duration, float finalFillAmount, CurveType curve = CurveType.None, bool unscaledTime = false)
+        {
+            if (duration == 0)
+            {
+                image.fillAmount = finalFillAmount;
+                return;
+            }
+
+            if (currentLerpedFillAmounts.Keys.Contains(image))
+            {
+                lerpedFillAmountsToStop.Add(image);
+
+                currentLerpedFillAmounts[image] = ULerpFillAmountAsync(image, duration, finalFillAmount, curve, unscaledTime);
+            }
+            else
+            {
+                currentLerpedFillAmounts.Add(image, ULerpFillAmountAsync(image, duration, finalFillAmount, curve, unscaledTime));
+            }
+        }
+
+        private static async Task ULerpFillAmountAsync(Image image, float duration, float finalFillAmount, CurveType curve, bool unscaledTime)
+        {
+            float timer = 0;
+            float originalFill = image.fillAmount;
+
+            while (timer < duration)
+            {
+                if (!Application.isPlaying) return;
+                if (lerpedFillAmountsToStop.Contains(image) && timer != 0)
+                {
+                    lerpedFillAmountsToStop.Remove(image);
+
+                    return;
+                }
+
+                timer += unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+
+                image.fillAmount = Mathf.Lerp(originalFill, finalFillAmount, UtilitiesCurves.AdaptToWantedCurve(curve, timer / duration));
+
+                await Task.Yield();
+            }
+
+            if (!Application.isPlaying) return;
+            image.fillAmount = finalFillAmount;
+            currentLerpedFillAmounts.Remove(image);
+        }
+
+        #endregion
+
+
         #region Lerp Image Color
 
         public static void UStopLerpImageColor(this Image image)
